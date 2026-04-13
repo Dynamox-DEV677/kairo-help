@@ -868,6 +868,288 @@
   to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
+/* ===== SIMULATOR PANEL ===== */
+.sim-toggle {
+  position: fixed;
+  bottom: 24px;
+  left: 24px;
+  width: 48px;
+  height: 48px;
+  background: rgba(168,85,247,0.15);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(168,85,247,0.3);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #a855f7;
+  cursor: pointer;
+  z-index: 60;
+  transition: all 0.25s ease;
+  box-shadow: 0 0 20px rgba(168,85,247,0.2);
+}
+
+.sim-toggle:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 30px rgba(168,85,247,0.4);
+  background: rgba(168,85,247,0.25);
+}
+
+.sim-toggle.active {
+  background: #a855f7;
+  color: white;
+}
+
+.sim-panel {
+  position: fixed;
+  bottom: 84px;
+  left: 24px;
+  width: 320px;
+  max-height: 70vh;
+  overflow-y: auto;
+  background: rgba(15,15,22,0.95);
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 20px;
+  padding: 0;
+  z-index: 60;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.5), 0 0 40px rgba(168,85,247,0.08);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(12px) scale(0.96);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.sim-panel.open {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+}
+
+.sim-panel::-webkit-scrollbar { width: 4px; }
+.sim-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
+
+.sim-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.sim-title {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.sim-close {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.06);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sim-close:hover {
+  background: rgba(255,255,255,0.12);
+  color: var(--text-primary);
+}
+
+.sim-section {
+  padding: 14px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+
+.sim-label {
+  font-size: 0.5625rem;
+  font-weight: 800;
+  color: var(--text-tertiary);
+  letter-spacing: 0.14em;
+  margin-bottom: 10px;
+}
+
+.sim-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.sim-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 10px;
+  padding: 8px 10px;
+}
+
+.sim-field.full {
+  width: 100%;
+}
+
+.sim-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text-primary);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  width: 100%;
+  min-width: 0;
+}
+
+.sim-input::placeholder { color: var(--text-tertiary); }
+
+/* Remove spinner arrows from number inputs */
+.sim-input::-webkit-outer-spin-button,
+.sim-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.sim-presets {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.sim-preset {
+  padding: 4px 10px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8px;
+  color: var(--text-secondary);
+  font-size: 0.625rem;
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sim-preset:hover {
+  background: rgba(168,85,247,0.1);
+  border-color: rgba(168,85,247,0.3);
+  color: #a855f7;
+}
+
+.sim-range {
+  flex: 1;
+  -webkit-appearance: none;
+  height: 4px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 2px;
+  outline: none;
+}
+
+.sim-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #a855f7;
+  cursor: pointer;
+  box-shadow: 0 0 8px rgba(168,85,247,0.5);
+}
+
+.sim-range-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: var(--neon-green);
+  min-width: 36px;
+  text-align: right;
+}
+
+.sim-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.sim-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.03);
+  color: var(--text-secondary);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sim-btn:hover {
+  transform: translateY(-1px);
+}
+
+.sim-btn:active {
+  transform: scale(0.96);
+}
+
+.sim-btn-heartbeat {
+  border-color: rgba(52,211,153,0.2);
+  color: #34d399;
+}
+.sim-btn-heartbeat:hover {
+  background: rgba(52,211,153,0.1);
+  box-shadow: 0 0 12px rgba(52,211,153,0.2);
+}
+
+.sim-btn-sos {
+  border-color: rgba(255,59,48,0.3);
+  color: #ff6b6b;
+}
+.sim-btn-sos:hover {
+  background: rgba(255,59,48,0.15);
+  box-shadow: 0 0 12px rgba(255,59,48,0.3);
+}
+
+.sim-btn-fall {
+  border-color: rgba(249,115,22,0.2);
+  color: #fb923c;
+}
+.sim-btn-fall:hover {
+  background: rgba(249,115,22,0.1);
+  box-shadow: 0 0 12px rgba(249,115,22,0.2);
+}
+
+.sim-btn-geo {
+  border-color: rgba(234,179,8,0.2);
+  color: #facc15;
+}
+.sim-btn-geo:hover {
+  background: rgba(234,179,8,0.1);
+  box-shadow: 0 0 12px rgba(234,179,8,0.2);
+}
+
+.sim-status {
+  padding: 0 20px 14px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-align: center;
+  min-height: 20px;
+  transition: all 0.2s ease;
+}
+
+.sim-status.success { color: #34d399; }
+.sim-status.error { color: #ff6b6b; }
+.sim-status.sending { color: var(--text-tertiary); }
+
 /* ===== RESPONSIVE ===== */
 @media (max-width: 480px) {
   .stats-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -875,4 +1157,17 @@
   .stat-card { padding: 16px 12px; }
   .alert-command-inner { flex-wrap: wrap; }
   .alert-command-resolve { width: 100%; text-align: center; margin-top: 8px; }
+
+  .sim-panel {
+    left: 12px;
+    right: 12px;
+    width: auto;
+    bottom: 76px;
+  }
+  .sim-toggle {
+    left: 16px;
+    bottom: 16px;
+    width: 44px;
+    height: 44px;
+  }
 }

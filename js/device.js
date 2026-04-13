@@ -432,9 +432,81 @@ function animateNumber(elId, target) {
   function tick(now) {
     const elapsed = now - startTime;
     const progress = Math.min(elapsed / duration, 1);
-    const eased = 1 - Math.pow(1 - progress, 3); // easeOutCubic
+    const eased = 1 - Math.pow(1 - progress, 3);
     el.textContent = Math.round(start + diff * eased);
     if (progress < 1) requestAnimationFrame(tick);
   }
   requestAnimationFrame(tick);
+}
+
+// ===== SIMULATOR PANEL =====
+function toggleSimPanel() {
+  const panel = document.getElementById('simPanel');
+  const toggle = document.getElementById('simToggle');
+  panel.classList.toggle('open');
+  toggle.classList.toggle('active');
+}
+
+function setSimLocation(lat, lng) {
+  document.getElementById('simLat').value = lat;
+  document.getElementById('simLng').value = lng;
+}
+
+// Battery range slider live update
+document.addEventListener('DOMContentLoaded', () => {
+  const range = document.getElementById('simBattery');
+  const val = document.getElementById('simBatteryVal');
+  if (range && val) {
+    range.addEventListener('input', () => {
+      val.textContent = range.value + '%';
+    });
+  }
+});
+
+async function sendTestAlert(alertType) {
+  const status = document.getElementById('simStatus');
+  status.className = 'sim-status sending';
+  status.textContent = 'Sending ' + alertType + '...';
+
+  const lat = parseFloat(document.getElementById('simLat').value) || null;
+  const lng = parseFloat(document.getElementById('simLng').value) || null;
+  const battery = parseInt(document.getElementById('simBattery').value) || 50;
+
+  const deviceId = currentDeviceId || 'SIM-TEST';
+  const profileId = currentProfileId;
+
+  if (!profileId) {
+    status.className = 'sim-status error';
+    status.textContent = 'No profile ID. Open with ?id=yourprofileid';
+    return;
+  }
+
+  try {
+    const { error } = await supabase.from('device_alerts').insert({
+      profile_id: profileId,
+      device_id: deviceId,
+      alert_type: alertType,
+      latitude: lat,
+      longitude: lng,
+      battery_level: battery,
+      resolved: false
+    });
+
+    if (error) throw error;
+
+    status.className = 'sim-status success';
+    status.textContent = alertType.toUpperCase() + ' sent successfully';
+    setTimeout(() => { status.textContent = ''; status.className = 'sim-status'; }, 3000);
+
+    // Slightly move location for next heartbeat (simulate movement)
+    if (lat) {
+      document.getElementById('simLat').value = (lat + (Math.random() - 0.5) * 0.002).toFixed(6);
+      document.getElementById('simLng').value = (lng + (Math.random() - 0.5) * 0.002).toFixed(6);
+    }
+
+  } catch (e) {
+    console.error('Sim error:', e);
+    status.className = 'sim-status error';
+    status.textContent = 'Failed: ' + (e.message || 'Unknown error');
+  }
 }

@@ -211,6 +211,73 @@
     </div>
   </div>
 
+  <!-- ===== TEST SIMULATOR PANEL ===== -->
+  <div class="sim-toggle" id="simToggle" onclick="toggleSimPanel()">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+  </div>
+
+  <div class="sim-panel" id="simPanel">
+    <div class="sim-header">
+      <div class="sim-title">Device Simulator</div>
+      <button class="sim-close" onclick="toggleSimPanel()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <div class="sim-section">
+      <div class="sim-label">LOCATION</div>
+      <div class="sim-row">
+        <div class="sim-field">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--neon-cyan)" stroke-width="2"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+          <input type="number" class="sim-input" id="simLat" value="12.9716" step="0.001" placeholder="Latitude">
+        </div>
+        <div class="sim-field">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--neon-cyan)" stroke-width="2"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+          <input type="number" class="sim-input" id="simLng" value="77.5946" step="0.001" placeholder="Longitude">
+        </div>
+      </div>
+      <div class="sim-presets">
+        <button class="sim-preset" onclick="setSimLocation(12.9716,77.5946)">Bangalore</button>
+        <button class="sim-preset" onclick="setSimLocation(19.0760,72.8777)">Mumbai</button>
+        <button class="sim-preset" onclick="setSimLocation(28.6139,77.2090)">Delhi</button>
+        <button class="sim-preset" onclick="setSimLocation(13.0827,80.2707)">Chennai</button>
+      </div>
+    </div>
+
+    <div class="sim-section">
+      <div class="sim-label">BATTERY</div>
+      <div class="sim-field full">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--neon-green)" stroke-width="2"><rect x="1" y="6" width="18" height="12" rx="2"/><line x1="23" y1="10" x2="23" y2="14"/></svg>
+        <input type="range" class="sim-range" id="simBattery" min="0" max="100" value="72">
+        <span class="sim-range-val" id="simBatteryVal">72%</span>
+      </div>
+    </div>
+
+    <div class="sim-section">
+      <div class="sim-label">SEND ALERT</div>
+      <div class="sim-buttons">
+        <button class="sim-btn sim-btn-heartbeat" onclick="sendTestAlert('heartbeat')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+          Heartbeat
+        </button>
+        <button class="sim-btn sim-btn-sos" onclick="sendTestAlert('sos')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          SOS Alert
+        </button>
+        <button class="sim-btn sim-btn-fall" onclick="sendTestAlert('fall')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/><line x1="12" y1="11" x2="12" y2="17"/></svg>
+          Fall Detect
+        </button>
+        <button class="sim-btn sim-btn-geo" onclick="sendTestAlert('geofence')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/></svg>
+          Geofence
+        </button>
+      </div>
+    </div>
+
+    <div class="sim-status" id="simStatus"></div>
+  </div>
+
   <!-- Leaflet + Supabase -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
