@@ -1,0 +1,4 @@
+node_modules/
+take-screenshots.js
+.claude/
+package-lock.json
