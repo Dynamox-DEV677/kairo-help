@@ -1,74 +1,62 @@
-// ===== Kairo's Help - Device Dashboard =====
+// ===== Kairo's Help - Premium Device Dashboard =====
 
 let currentProfileId = null;
 let currentDeviceId = null;
 let deviceMap = null;
 let deviceMarker = null;
-let realtimeChannel = null;
+let radarElement = null;
+let activeAlertObj = null;
+let isEmergencyMode = false;
 
-// ===== Init =====
+// ===== Initialize =====
 (async function() {
   const params = new URLSearchParams(window.location.search);
   currentProfileId = params.get('id');
 
-  if (!currentProfileId) {
-    showError();
-    return;
-  }
+  if (!currentProfileId) { showError(); return; }
 
   try {
-    // Check profile exists and has device
     let profileData = null;
-
-    // Try localStorage first
     const local = localStorage.getItem(`profile_${currentProfileId}`);
     if (local) profileData = JSON.parse(local);
 
-    // Try Supabase
-    const { data: row, error } = await supabase
+    const { data: row } = await supabase
       .from('emergency_profiles')
       .select('*')
       .eq('id', currentProfileId)
       .single();
 
-    if (!row && !profileData) {
-      showError();
-      return;
-    }
+    if (!row && !profileData) { showError(); return; }
 
     const name = (row && row.name) || (profileData && profileData.name) || 'Unknown';
     const deviceId = (row && row.device_id) || (profileData && profileData.deviceId) || null;
-    const deviceLinked = (row && row.device_linked) || (profileData && !!profileData.deviceId) || false;
+    const linked = (row && row.device_linked) || !!(profileData && profileData.deviceId);
 
-    document.getElementById('pageLoading').classList.add('hidden');
+    // Dismiss loader
+    setTimeout(() => {
+      document.getElementById('loaderScreen').classList.add('fade-out');
+    }, 2000);
 
-    if (!deviceLinked || !deviceId) {
-      // Show link device flow
-      document.getElementById('linkDeviceSection').classList.remove('hidden');
-      return;
-    }
+    setTimeout(() => {
+      if (!linked || !deviceId) {
+        document.getElementById('linkDeviceSection').classList.remove('hidden');
+        return;
+      }
 
-    // Show dashboard
-    currentDeviceId = deviceId;
-    document.getElementById('dashboardSection').classList.remove('hidden');
-    document.getElementById('profileNameDisplay').textContent = name;
-    document.getElementById('deviceIdDisplay').textContent = deviceId;
-    document.getElementById('viewProfileLink').href = `view.html?id=${currentProfileId}`;
+      currentDeviceId = deviceId;
+      document.getElementById('dashboardSection').classList.remove('hidden');
+      document.getElementById('profileNameDisplay').textContent = name;
+      document.getElementById('deviceIdDisplay').textContent = deviceId;
+      document.getElementById('viewProfileLink').href = `view.html?id=${currentProfileId}`;
 
-    // Init map
-    initMap();
-
-    // Load alerts
-    await loadAlerts();
-
-    // Load device status
-    await loadDeviceStatus();
-
-    // Subscribe to realtime alerts
-    subscribeToAlerts();
+      initMap();
+      loadDeviceStatus();
+      loadAlerts();
+      subscribeToAlerts();
+    }, 2400);
 
   } catch (err) {
-    console.error('Dashboard error:', err);
+    console.error(err);
     showError();
   }
 })();
@@ -76,44 +64,51 @@ let realtimeChannel = null;
 // ===== Map =====
 function initMap() {
   deviceMap = L.map('deviceMap', {
-    center: [20.5937, 78.9629], // Default: India center
+    center: [20.5937, 78.9629],
     zoom: 4,
-    zoomControl: true,
+    zoomControl: false,
     attributionControl: false
   });
 
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 18
   }).addTo(deviceMap);
+
+  // Add zoom control to bottom right
+  L.control.zoom({ position: 'bottomright' }).addTo(deviceMap);
 }
 
 function updateMapLocation(lat, lng) {
-  if (!deviceMap) return;
-  if (!lat || !lng) return;
-
+  if (!deviceMap || !lat || !lng) return;
   const pos = [lat, lng];
 
   if (deviceMarker) {
     deviceMarker.setLatLng(pos);
   } else {
-    deviceMarker = L.circleMarker(pos, {
-      radius: 10,
-      fillColor: '#a855f7',
-      color: '#a855f7',
-      weight: 2,
-      opacity: 1,
-      fillOpacity: 0.6
-    }).addTo(deviceMap);
+    // Custom neon marker
+    const markerIcon = L.divIcon({
+      className: 'custom-marker',
+      html: `
+        <div style="position:relative;width:20px;height:20px">
+          <div style="width:20px;height:20px;border-radius:50%;background:#a855f7;box-shadow:0 0 12px #a855f7,0 0 30px rgba(168,85,247,0.4);position:absolute;inset:0"></div>
+          <div class="radar-ping"></div>
+          <div class="radar-ping" style="animation-delay:1s"></div>
+        </div>
+      `,
+      iconSize: [20, 20],
+      iconAnchor: [10, 10]
+    });
+    deviceMarker = L.marker(pos, { icon: markerIcon }).addTo(deviceMap);
   }
 
-  deviceMap.setView(pos, 15, { animate: true });
-  document.getElementById('coordsText').textContent = `Lat: ${lat.toFixed(6)}, Lng: ${lng.toFixed(6)}`;
+  deviceMap.flyTo(pos, 15, { duration: 1.5 });
+  document.getElementById('coordsText').textContent = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
 }
 
-// ===== Load Device Status =====
+// ===== Device Status =====
 async function loadDeviceStatus() {
   try {
-    const { data, error } = await supabase
+    const { data } = await supabase
       .from('device_alerts')
       .select('*')
       .eq('profile_id', currentProfileId)
@@ -123,22 +118,25 @@ async function loadDeviceStatus() {
 
     if (data && data.length > 0) {
       const last = data[0];
-      const timeDiff = Date.now() - new Date(last.timestamp).getTime();
-      const isOnline = timeDiff < 5 * 60 * 1000; // 5 minutes
+      const diff = Date.now() - new Date(last.timestamp).getTime();
+      const online = diff < 5 * 60 * 1000;
 
-      setDeviceStatus(isOnline ? 'online' : 'offline');
-      updateBattery(last.battery_level);
-      document.getElementById('lastHeartbeat').textContent = `Last: ${timeAgo(last.timestamp)}`;
+      setStatus(online ? 'online' : 'offline');
+      setBattery(last.battery_level);
+      setSignal(online ? 4 : 0);
 
       if (last.latitude && last.longitude) {
         updateMapLocation(last.latitude, last.longitude);
+        setGPS(true);
       }
     } else {
-      setDeviceStatus('offline');
+      setStatus('offline');
+      setSignal(0);
+      setGPS(false);
     }
 
-    // Check for active SOS alerts
-    const { data: sosAlerts } = await supabase
+    // Check active alerts
+    const { data: active } = await supabase
       .from('device_alerts')
       .select('*')
       .eq('profile_id', currentProfileId)
@@ -146,43 +144,117 @@ async function loadDeviceStatus() {
       .neq('alert_type', 'heartbeat')
       .order('timestamp', { ascending: false });
 
-    if (sosAlerts && sosAlerts.length > 0) {
-      setDeviceStatus('alert');
+    if (active && active.length > 0) {
+      enterEmergencyMode(active[0]);
     }
-  } catch (err) {
-    console.error('Status load error:', err);
+  } catch (e) {
+    console.error('Status error:', e);
   }
 }
 
-function setDeviceStatus(status) {
-  const dot = document.getElementById('statusDot');
-  const text = document.getElementById('statusText');
-
-  dot.className = 'status-dot ' + status;
-  text.className = 'status-text ' + status;
-
-  if (status === 'online') text.textContent = 'Online';
-  else if (status === 'alert') text.textContent = 'ALERT ACTIVE';
-  else text.textContent = 'Offline';
+function setStatus(s) {
+  const ring = document.getElementById('statusRing');
+  const label = document.getElementById('statusLabel');
+  ring.className = 'status-ring ' + s;
+  label.className = 'status-label ' + s;
+  label.textContent = s === 'online' ? 'ONLINE' : s === 'alert' ? 'ALERT' : 'OFFLINE';
 }
 
-function updateBattery(level) {
+function setBattery(level) {
   if (level === null || level === undefined) return;
+  const ring = document.getElementById('batteryRing');
+  const text = document.getElementById('batteryText');
+  const circumference = 2 * Math.PI * 52; // r=52
+  const offset = circumference - (level / 100) * circumference;
 
-  const bar = document.getElementById('batteryBar');
-  const percent = document.getElementById('batteryPercent');
-  const value = document.getElementById('batteryValue');
+  ring.style.strokeDashoffset = offset;
+  ring.className = 'battery-ring-fill' + (level > 50 ? '' : level > 20 ? ' medium' : ' low');
+  text.textContent = level + '%';
+}
 
-  bar.style.width = level + '%';
-  bar.className = 'battery-bar ' + (level > 50 ? 'high' : level > 20 ? 'medium' : 'low');
-  percent.textContent = level + '%';
-  value.textContent = level + '%';
+function setSignal(bars) {
+  document.querySelectorAll('.signal-bar').forEach((bar, i) => {
+    bar.classList.toggle('active', i < bars);
+  });
+  document.getElementById('signalText').textContent = bars > 0 ? 'Connected' : 'No Signal';
+}
+
+function setGPS(hasFix) {
+  const icon = document.getElementById('gpsIcon');
+  const text = document.getElementById('gpsText');
+  icon.className = 'gps-icon' + (hasFix ? ' active' : '');
+  text.textContent = hasFix ? 'Fix Acquired' : 'No Fix';
+}
+
+// ===== Emergency Mode =====
+function enterEmergencyMode(alert) {
+  isEmergencyMode = true;
+  activeAlertObj = alert;
+  setStatus('alert');
+
+  // Show alert command center
+  const cmd = document.getElementById('alertCommand');
+  cmd.classList.remove('hidden');
+  document.getElementById('allClearState').classList.add('hidden');
+
+  const meta = document.getElementById('alertCommandMeta');
+  const time = new Date(alert.timestamp).toLocaleString();
+  meta.textContent = `${alert.alert_type.toUpperCase()} at ${time}`;
+
+  // Red overlay
+  document.getElementById('emergencyOverlay').classList.add('active');
+
+  // Heartbeat turns red
+  const hbLine = document.getElementById('hbLine');
+  hbLine.classList.add('alert-mode');
+
+  // Live badge turns red
+  document.getElementById('liveBadge').classList.add('alert-mode');
+  document.getElementById('liveBadge').querySelector('.live-dot').style.color = '#ff6b6b';
+  document.getElementById('liveBadge').childNodes[2].textContent = ' SOS';
+
+  // Update map to alert location
+  if (alert.latitude && alert.longitude) {
+    updateMapLocation(alert.latitude, alert.longitude);
+  }
+}
+
+function exitEmergencyMode() {
+  isEmergencyMode = false;
+  activeAlertObj = null;
+
+  document.getElementById('alertCommand').classList.add('hidden');
+  document.getElementById('allClearState').classList.remove('hidden');
+  document.getElementById('emergencyOverlay').classList.remove('active');
+  document.getElementById('hbLine').classList.remove('alert-mode');
+
+  const badge = document.getElementById('liveBadge');
+  badge.classList.remove('alert-mode');
+  badge.innerHTML = '<span class="live-dot"></span> LIVE';
+
+  setStatus('online');
+}
+
+async function resolveActiveAlert() {
+  if (!activeAlertObj) return;
+  const btn = document.getElementById('alertResolveBtn');
+  btn.textContent = '...';
+  btn.disabled = true;
+
+  try {
+    await supabase.from('device_alerts').update({ resolved: true }).eq('id', activeAlertObj.id);
+    exitEmergencyMode();
+    loadAlerts();
+  } catch (e) {
+    btn.textContent = 'RESOLVE';
+    btn.disabled = false;
+  }
 }
 
 // ===== Load Alerts =====
 async function loadAlerts() {
   try {
-    const { data, error } = await supabase
+    const { data } = await supabase
       .from('device_alerts')
       .select('*')
       .eq('profile_id', currentProfileId)
@@ -191,194 +263,178 @@ async function loadAlerts() {
 
     if (!data || data.length === 0) return;
 
-    const activeFeed = document.getElementById('activeAlertFeed');
-    const historyFeed = document.getElementById('alertHistory');
-    let activeCount = 0;
+    const timeline = document.getElementById('alertTimeline');
+    timeline.innerHTML = '';
+    let totalCount = 0;
+    let lastAlertTime = null;
 
-    activeFeed.innerHTML = '';
-    historyFeed.innerHTML = '';
+    data.forEach((alert, i) => {
+      totalCount++;
+      if (!lastAlertTime && alert.alert_type !== 'heartbeat') lastAlertTime = alert.timestamp;
 
-    data.forEach(alert => {
-      if (alert.alert_type === 'heartbeat') {
-        // Skip heartbeats in the feed, only show in history
-        const card = createAlertCard(alert, true);
-        historyFeed.appendChild(card);
-        return;
-      }
+      const item = document.createElement('div');
+      item.className = `tl-item ${alert.alert_type}`;
+      item.style.animationDelay = `${i * 0.05}s`;
 
-      if (!alert.resolved) {
-        activeCount++;
-        const card = createAlertCard(alert, false);
-        activeFeed.appendChild(card);
+      const resolved = alert.resolved || alert.alert_type === 'heartbeat';
+      const coords = alert.latitude ? `${alert.latitude.toFixed(4)}, ${alert.longitude.toFixed(4)}` : 'No GPS';
+      const battery = alert.battery_level !== null ? ` | ${alert.battery_level}%` : '';
 
-        // Update map to alert location
-        if (alert.latitude && alert.longitude) {
-          updateMapLocation(alert.latitude, alert.longitude);
-        }
-      } else {
-        const card = createAlertCard(alert, true);
-        historyFeed.appendChild(card);
-      }
+      item.innerHTML = `
+        <div class="tl-top">
+          <span class="tl-badge ${alert.alert_type}">${alert.alert_type.toUpperCase()}</span>
+          <span class="tl-time">${timeAgo(alert.timestamp)}</span>
+        </div>
+        <div class="tl-details">${coords}${battery}</div>
+        ${!resolved ? `<button class="tl-resolve" onclick="resolveFromTimeline('${alert.id}', this)">Resolve</button>` : ''}
+      `;
+      timeline.appendChild(item);
     });
 
-    document.getElementById('activeAlertCount').textContent = activeCount;
-    document.getElementById('activeAlertCount').style.color = activeCount > 0 ? '#ff3b30' : 'var(--neon-green)';
+    // Animate total count
+    animateNumber('totalAlertCount', totalCount);
+    document.getElementById('lastAlertTime').textContent = lastAlertTime ? timeAgo(lastAlertTime) : 'None';
 
-    if (activeFeed.children.length === 0) {
-      activeFeed.innerHTML = '<div class="empty-state">No active alerts. All clear.</div>';
-    }
-    if (historyFeed.children.length === 0) {
-      historyFeed.innerHTML = '<div class="empty-state">No alerts recorded yet.</div>';
-    }
-
-  } catch (err) {
-    console.error('Load alerts error:', err);
+  } catch (e) {
+    console.error('Alerts error:', e);
   }
 }
 
-function createAlertCard(alert, isHistory) {
-  const card = document.createElement('div');
-  card.className = `alert-card ${alert.alert_type}`;
-  card.innerHTML = `
-    <span class="alert-type-badge ${alert.alert_type}">${alert.alert_type.toUpperCase()}</span>
-    <div class="alert-card-info">
-      <div class="alert-card-time">${formatTime(alert.timestamp)}</div>
-      <div class="alert-card-coords">${alert.latitude ? `${alert.latitude.toFixed(4)}, ${alert.longitude.toFixed(4)}` : 'No GPS data'}${alert.battery_level !== null ? ` | Battery: ${alert.battery_level}%` : ''}</div>
-    </div>
-    ${!isHistory && !alert.resolved ? `<button class="alert-resolve-btn" onclick="resolveAlert('${alert.id}', this)">Resolve</button>` : ''}
-  `;
-  return card;
-}
-
-// ===== Resolve Alert =====
-async function resolveAlert(alertId, btn) {
+async function resolveFromTimeline(id, btn) {
   btn.textContent = '...';
-  btn.disabled = true;
-
   try {
-    const { error } = await supabase
-      .from('device_alerts')
-      .update({ resolved: true })
-      .eq('id', alertId);
-
-    if (error) throw error;
-
-    // Reload alerts
-    await loadAlerts();
-    await loadDeviceStatus();
-
-  } catch (err) {
-    console.error('Resolve error:', err);
+    await supabase.from('device_alerts').update({ resolved: true }).eq('id', id);
+    if (activeAlertObj && activeAlertObj.id === id) exitEmergencyMode();
+    loadAlerts();
+  } catch (e) {
     btn.textContent = 'Retry';
-    btn.disabled = false;
   }
 }
 
-// ===== Realtime Subscription =====
+// ===== Realtime =====
 function subscribeToAlerts() {
-  realtimeChannel = supabase
-    .channel('device-alerts-' + currentProfileId)
+  supabase
+    .channel('dash-' + currentProfileId)
     .on('postgres_changes', {
       event: 'INSERT',
       schema: 'public',
       table: 'device_alerts',
       filter: `profile_id=eq.${currentProfileId}`
-    }, handleNewAlert)
+    }, (payload) => {
+      const alert = payload.new;
+
+      if (alert.alert_type === 'heartbeat') {
+        setStatus('online');
+        setBattery(alert.battery_level);
+        setSignal(4);
+        if (alert.latitude && alert.longitude) {
+          updateMapLocation(alert.latitude, alert.longitude);
+          setGPS(true);
+        }
+        // Add to timeline
+        prependTimeline(alert);
+        return;
+      }
+
+      // SOS / Fall / Geofence
+      enterEmergencyMode(alert);
+      prependTimeline(alert);
+      animateNumber('totalAlertCount', parseInt(document.getElementById('totalAlertCount').textContent || '0') + 1);
+    })
     .subscribe();
 }
 
-function handleNewAlert(payload) {
-  const alert = payload.new;
+function prependTimeline(alert) {
+  const timeline = document.getElementById('alertTimeline');
+  const empty = timeline.querySelector('.timeline-empty');
+  if (empty) empty.remove();
 
-  if (alert.alert_type === 'heartbeat') {
-    // Update status and battery
-    setDeviceStatus('online');
-    updateBattery(alert.battery_level);
-    document.getElementById('lastHeartbeat').textContent = `Last: just now`;
-    if (alert.latitude && alert.longitude) {
-      updateMapLocation(alert.latitude, alert.longitude);
-    }
-    return;
-  }
+  const resolved = alert.resolved || alert.alert_type === 'heartbeat';
+  const coords = alert.latitude ? `${alert.latitude.toFixed(4)}, ${alert.longitude.toFixed(4)}` : 'No GPS';
+  const battery = alert.battery_level !== null ? ` | ${alert.battery_level}%` : '';
 
-  // SOS / Fall / Geofence alert
-  setDeviceStatus('alert');
-
-  // Add to active feed
-  const activeFeed = document.getElementById('activeAlertFeed');
-  const emptyState = activeFeed.querySelector('.empty-state');
-  if (emptyState) emptyState.remove();
-
-  const card = createAlertCard(alert, false);
-  activeFeed.prepend(card);
-
-  // Update count
-  const countEl = document.getElementById('activeAlertCount');
-  countEl.textContent = parseInt(countEl.textContent || '0') + 1;
-  countEl.style.color = '#ff3b30';
-
-  // Update map
-  if (alert.latitude && alert.longitude) {
-    updateMapLocation(alert.latitude, alert.longitude);
-  }
-
-  // Flash the page
-  document.body.style.animation = 'none';
-  document.body.offsetHeight; // Trigger reflow
-  document.body.style.animation = '';
+  const item = document.createElement('div');
+  item.className = `tl-item ${alert.alert_type}`;
+  item.innerHTML = `
+    <div class="tl-top">
+      <span class="tl-badge ${alert.alert_type}">${alert.alert_type.toUpperCase()}</span>
+      <span class="tl-time">just now</span>
+    </div>
+    <div class="tl-details">${coords}${battery}</div>
+    ${!resolved ? `<button class="tl-resolve" onclick="resolveFromTimeline('${alert.id}', this)">Resolve</button>` : ''}
+  `;
+  timeline.prepend(item);
 }
 
 // ===== Link Device =====
 async function linkDevice() {
-  const deviceId = document.getElementById('linkDeviceIdInput').value.trim();
-  if (!deviceId) return;
+  const id = document.getElementById('linkDeviceIdInput').value.trim();
+  if (!id) return;
 
   try {
-    const { error } = await supabase
-      .from('emergency_profiles')
-      .update({ device_id: deviceId, device_linked: true })
+    await supabase.from('emergency_profiles')
+      .update({ device_id: id, device_linked: true })
       .eq('id', currentProfileId);
 
-    if (error) throw error;
-
-    // Also update localStorage
     const local = localStorage.getItem(`profile_${currentProfileId}`);
     if (local) {
-      const data = JSON.parse(local);
-      data.deviceId = deviceId;
-      localStorage.setItem(`profile_${currentProfileId}`, JSON.stringify(data));
+      const d = JSON.parse(local);
+      d.deviceId = id;
+      localStorage.setItem(`profile_${currentProfileId}`, JSON.stringify(d));
     }
-
-    // Reload page
     window.location.reload();
-
-  } catch (err) {
-    console.error('Link device error:', err);
-    alert('Failed to link device. Try again.');
+  } catch (e) {
+    console.error(e);
   }
 }
 
-// ===== Error State =====
-function showError() {
-  document.getElementById('pageLoading').classList.add('hidden');
-  document.getElementById('pageError').classList.remove('hidden');
+// ===== Share Location =====
+function shareLocation() {
+  const url = `${window.location.origin}/device.html?id=${currentProfileId}`;
+  if (navigator.share) {
+    navigator.share({ title: 'Kairo Device Tracker', url });
+  } else {
+    navigator.clipboard.writeText(url);
+    const btn = document.querySelector('.action-share');
+    btn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Copied!';
+    setTimeout(() => {
+      btn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> Share Location';
+    }, 2000);
+  }
 }
 
 // ===== Utilities =====
-function formatTime(ts) {
-  const d = new Date(ts);
-  return d.toLocaleString('en-US', {
-    month: 'short', day: 'numeric',
-    hour: '2-digit', minute: '2-digit', second: '2-digit'
-  });
+function showError() {
+  document.getElementById('loaderScreen').classList.add('fade-out');
+  setTimeout(() => {
+    document.getElementById('pageError').classList.remove('hidden');
+  }, 600);
 }
 
 function timeAgo(ts) {
   const diff = Date.now() - new Date(ts).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return 'just now';
-  if (mins < 60) return mins + 'm ago';
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return hrs + 'h ago';
-  return Math.floor(hrs / 24) + 'd ago';
+  const s = Math.floor(diff / 1000);
+  if (s < 60) return s + 's ago';
+  const m = Math.floor(s / 60);
+  if (m < 60) return m + 'm ago';
+  const h = Math.floor(m / 60);
+  if (h < 24) return h + 'h ago';
+  return Math.floor(h / 24) + 'd ago';
+}
+
+function animateNumber(elId, target) {
+  const el = document.getElementById(elId);
+  const start = parseInt(el.textContent) || 0;
+  const diff = target - start;
+  const duration = 600;
+  const startTime = performance.now();
+
+  function tick(now) {
+    const elapsed = now - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3); // easeOutCubic
+    el.textContent = Math.round(start + diff * eased);
+    if (progress < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
 }

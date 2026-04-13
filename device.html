@@ -3,15 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Device Dashboard - Kairo's Help</title>
+  <title>Live Tracking - Kairo's Help</title>
   <meta name="theme-color" content="#0a0a0f">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dashboard.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28'><rect width='28' height='28' rx='6' fill='%23a855f7'/><path d='M14 7v14M7 14h14' stroke='white' stroke-width='3' stroke-linecap='round'/></svg>">
 </head>
-<body>
+<body class="dash-body">
+
+  <!-- Emergency Overlay (shown during active SOS) -->
+  <div class="emergency-overlay" id="emergencyOverlay"></div>
 
   <!-- Animated Background -->
   <div class="bg-animation">
@@ -21,131 +25,194 @@
   </div>
   <div class="bg-grid"></div>
 
-  <!-- Navbar -->
-  <nav class="navbar">
-    <div class="navbar-inner">
-      <a href="index.html" class="navbar-brand">
-        <div class="logo-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-        </div>
-        Kairo's<span>Help</span>
-      </a>
-      <div class="navbar-actions">
-        <span style="font-size:0.8125rem;color:var(--text-tertiary)">Device Dashboard</span>
-      </div>
+  <!-- ===== LOADING SCREEN ===== -->
+  <div class="loader-screen" id="loaderScreen">
+    <div class="loader-logo">
+      <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
+        <rect width="56" height="56" rx="14" fill="url(#lg)"/>
+        <path d="M28 16v24M16 28h24" stroke="white" stroke-width="5" stroke-linecap="round"/>
+        <defs><linearGradient id="lg" x1="0" y1="0" x2="56" y2="56"><stop stop-color="#a855f7"/><stop offset="1" stop-color="#3b82f6"/></linearGradient></defs>
+      </svg>
     </div>
-  </nav>
-
-  <!-- Loading -->
-  <div class="view-loading" id="pageLoading">
-    <div class="spinner"></div>
-    <p style="color:var(--text-secondary)">Loading device data...</p>
+    <div class="loader-text">Connecting to device<span class="loader-dots"></span></div>
+    <div class="loader-bar"><div class="loader-bar-fill"></div></div>
   </div>
 
-  <!-- No Profile Error -->
-  <div class="view-error hidden" id="pageError">
-    <h2>No Profile Found</h2>
-    <p>Link a device from your profile builder first.</p>
-    <a href="index.html" class="btn btn-primary mt-4">Create Profile</a>
+  <!-- ===== ERROR STATE ===== -->
+  <div class="dash-error hidden" id="pageError">
+    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--text-tertiary)" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/></svg>
+    <h2>Device Not Found</h2>
+    <p style="color:var(--text-secondary)">No profile or device linked to this ID.</p>
+    <a href="index.html" class="btn btn-primary" style="margin-top:20px">Create Profile</a>
   </div>
 
-  <!-- Link Device Flow -->
+  <!-- ===== LINK DEVICE FLOW ===== -->
   <div class="hidden" id="linkDeviceSection">
-    <div class="link-device-card">
-      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--neon-green)" stroke-width="1.5" style="margin-bottom:16px">
-        <rect x="5" y="2" width="14" height="20" rx="2"/>
-        <line x1="12" y1="18" x2="12.01" y2="18"/>
-      </svg>
-      <h2>Link Your Kairo Device</h2>
-      <p>Enter the device ID shown on your wearable's screen to connect it to this profile.</p>
-      <input type="text" class="form-input" id="linkDeviceIdInput" placeholder="KAIRO-001" style="font-family:'Courier New',monospace;letter-spacing:0.1em">
-      <button class="btn btn-primary" onclick="linkDevice()" style="width:100%">Link Device</button>
+    <div class="link-card-wrap">
+      <div class="link-card">
+        <div class="link-card-icon">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--neon-purple)" stroke-width="1.5"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+        </div>
+        <h2>Link Your Device</h2>
+        <p>Enter the device ID from your Kairo wearable to start live tracking.</p>
+        <input type="text" class="link-input" id="linkDeviceIdInput" placeholder="KAIRO-001">
+        <button class="btn-link-device" onclick="linkDevice()">Connect Device</button>
+      </div>
     </div>
   </div>
 
-  <!-- Dashboard -->
+  <!-- ===== MAIN DASHBOARD ===== -->
   <div class="hidden" id="dashboardSection">
-    <div class="dashboard-container">
 
-      <!-- Header -->
-      <div class="dashboard-header">
-        <h1>Device Dashboard</h1>
-        <p style="color:var(--text-secondary);font-size:0.875rem" id="profileNameDisplay"></p>
+    <!-- Top Nav Bar -->
+    <div class="dash-nav">
+      <a href="index.html" class="dash-nav-brand">
+        <svg width="24" height="24" viewBox="0 0 28 28" fill="none"><rect width="28" height="28" rx="7" fill="url(#nb)"/><path d="M14 8v12M8 14h12" stroke="white" stroke-width="3" stroke-linecap="round"/><defs><linearGradient id="nb" x1="0" y1="0" x2="28" y2="28"><stop stop-color="#a855f7"/><stop offset="1" stop-color="#3b82f6"/></linearGradient></defs></svg>
+        Kairo's Help
+      </a>
+      <div class="dash-nav-right">
+        <div class="live-badge" id="liveBadge">
+          <span class="live-dot"></span>
+          LIVE
+        </div>
       </div>
+    </div>
 
-      <!-- Heartbeat SVG decoration -->
-      <svg width="100%" height="40" viewBox="0 0 600 40" preserveAspectRatio="none" style="margin-bottom:16px;opacity:0.5">
-        <path class="heartbeat-line" d="M0,20 L100,20 L120,5 L140,35 L160,10 L180,30 L200,20 L300,20 L320,5 L340,35 L360,10 L380,30 L400,20 L500,20 L520,5 L540,35 L560,10 L580,30 L600,20"/>
+    <!-- Heartbeat Monitor Line -->
+    <div class="heartbeat-monitor" id="heartbeatMonitor">
+      <svg width="100%" height="60" viewBox="0 0 1200 60" preserveAspectRatio="none" id="heartbeatSvg">
+        <path class="hb-line" id="hbLine" d="M0,30 L200,30 L230,8 L250,52 L270,14 L290,46 L310,30 L500,30 L530,8 L550,52 L570,14 L590,46 L610,30 L800,30 L830,8 L850,52 L870,14 L890,46 L910,30 L1200,30"/>
       </svg>
+    </div>
 
-      <!-- Status Cards -->
-      <div class="dashboard-grid">
-
-        <!-- Device Status -->
-        <div class="dashboard-card">
-          <div class="card-label">Device Status</div>
-          <div class="status-row">
-            <div class="status-dot" id="statusDot"></div>
-            <span class="status-text" id="statusText">Checking...</span>
-          </div>
-          <div style="margin-top:10px">
-            <div class="card-label" style="margin-bottom:4px">Device ID</div>
-            <div class="device-id-text" id="deviceIdDisplay">--</div>
+    <!-- Hero Status Section -->
+    <div class="dash-container">
+      <div class="status-hero">
+        <div class="status-hero-left">
+          <div class="device-name" id="profileNameDisplay">--</div>
+          <div class="device-id-label">Device <span class="mono" id="deviceIdDisplay">--</span></div>
+        </div>
+        <div class="status-hero-right">
+          <div class="status-indicator" id="statusIndicator">
+            <div class="status-ring" id="statusRing"></div>
+            <span class="status-label" id="statusLabel">OFFLINE</span>
           </div>
         </div>
+      </div>
 
+      <!-- ===== ALERT COMMAND CENTER ===== -->
+      <div class="alert-command hidden" id="alertCommand">
+        <div class="alert-command-inner">
+          <div class="alert-siren">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          </div>
+          <div class="alert-command-text">
+            <div class="alert-command-title">EMERGENCY ALERT</div>
+            <div class="alert-command-meta" id="alertCommandMeta">SOS triggered</div>
+          </div>
+          <button class="alert-command-resolve" id="alertResolveBtn" onclick="resolveActiveAlert()">RESOLVE</button>
+        </div>
+      </div>
+
+      <!-- All Clear State -->
+      <div class="all-clear" id="allClearState">
+        <div class="all-clear-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        </div>
+        <span>All Clear -- No Active Alerts</span>
+      </div>
+
+      <!-- ===== LIVE MAP ===== -->
+      <div class="map-section">
+        <div class="map-header">
+          <span class="section-label">LIVE LOCATION</span>
+          <span class="coords-text" id="coordsText">Waiting for GPS...</span>
+        </div>
+        <div class="map-wrap">
+          <div class="map-frame" id="deviceMap"></div>
+          <div class="map-live-badge">
+            <span class="live-dot"></span> TRACKING
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== STATS GRID ===== -->
+      <div class="stats-grid">
         <!-- Battery -->
-        <div class="dashboard-card">
-          <div class="card-label">Battery Level</div>
-          <div class="card-value" id="batteryValue">--</div>
-          <div class="battery-bar-container" style="margin-top:10px">
-            <div class="battery-bar high" id="batteryBar" style="width:0%"></div>
+        <div class="stat-card" style="--delay:0.1s">
+          <div class="stat-label">Battery</div>
+          <div class="battery-ring-wrap">
+            <svg class="battery-ring" viewBox="0 0 120 120">
+              <circle class="battery-ring-bg" cx="60" cy="60" r="52" stroke-width="8"/>
+              <circle class="battery-ring-fill" id="batteryRing" cx="60" cy="60" r="52" stroke-width="8" stroke-dasharray="326.7" stroke-dashoffset="326.7"/>
+            </svg>
+            <div class="battery-ring-text" id="batteryText">--%</div>
           </div>
-          <div class="battery-text">
-            <span id="batteryPercent">0%</span>
-            <span id="lastHeartbeat">Last seen: --</span>
+        </div>
+
+        <!-- Signal -->
+        <div class="stat-card" style="--delay:0.2s">
+          <div class="stat-label">Signal</div>
+          <div class="signal-bars" id="signalBars">
+            <div class="signal-bar" data-bar="1"></div>
+            <div class="signal-bar" data-bar="2"></div>
+            <div class="signal-bar" data-bar="3"></div>
+            <div class="signal-bar" data-bar="4"></div>
           </div>
+          <div class="stat-value" id="signalText">WiFi</div>
         </div>
 
-        <!-- Map -->
-        <div class="dashboard-card full-width">
-          <div class="card-label">Last Known Location</div>
-          <div class="map-container" id="deviceMap"></div>
-          <div style="font-size:0.75rem;color:var(--text-tertiary);margin-top:8px" id="coordsText">Waiting for GPS data...</div>
+        <!-- GPS -->
+        <div class="stat-card" style="--delay:0.3s">
+          <div class="stat-label">GPS</div>
+          <div class="gps-icon" id="gpsIcon">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>
+          </div>
+          <div class="stat-value" id="gpsText">No Fix</div>
         </div>
 
-      </div>
-
-      <!-- Active Alerts -->
-      <div class="dashboard-card" style="margin-bottom:16px">
-        <div class="card-label" style="display:flex;align-items:center;justify-content:space-between">
-          <span>Active Alerts</span>
-          <span id="activeAlertCount" style="color:var(--neon-green)">0</span>
-        </div>
-        <div class="alert-feed" id="activeAlertFeed">
-          <div class="empty-state">No active alerts. All clear.</div>
+        <!-- Total Alerts -->
+        <div class="stat-card" style="--delay:0.4s">
+          <div class="stat-label">Alerts</div>
+          <div class="stat-big-number" id="totalAlertCount">0</div>
+          <div class="stat-value" id="lastAlertTime">None yet</div>
         </div>
       </div>
 
-      <!-- Alert History -->
-      <div class="dashboard-card">
-        <div class="card-label">Alert History</div>
-        <div class="alert-feed" id="alertHistory">
-          <div class="empty-state">No alerts recorded yet.</div>
+      <!-- ===== ALERT TIMELINE ===== -->
+      <div class="timeline-section">
+        <div class="section-label">ALERT TIMELINE</div>
+        <div class="timeline" id="alertTimeline">
+          <div class="timeline-empty">No alerts recorded yet. Device is standing by.</div>
         </div>
       </div>
 
-      <!-- View Profile Link -->
-      <div style="text-align:center;margin-top:24px">
-        <a id="viewProfileLink" href="#" class="btn btn-secondary">View Public Profile</a>
+      <!-- ===== QUICK ACTIONS ===== -->
+      <div class="quick-actions">
+        <a href="tel:911" class="action-btn action-emergency">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6A19.79 19.79 0 014.12 4.18 2 2 0 016.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>
+          Call 911
+        </a>
+        <a id="viewProfileLink" href="#" class="action-btn action-profile">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          View Profile
+        </a>
+        <button class="action-btn action-share" onclick="shareLocation()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+          Share Location
+        </button>
+      </div>
+
+      <!-- Footer -->
+      <div class="dash-footer">
+        <p>Powered by <a href="index.html">Kairo's Help</a></p>
       </div>
 
     </div>
   </div>
 
-  <!-- Leaflet JS -->
+  <!-- Leaflet + Supabase -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <!-- Supabase SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="js/firebase-config.js"></script>
   <script src="js/device.js"></script>
