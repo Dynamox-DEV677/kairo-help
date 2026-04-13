@@ -79,6 +79,16 @@ const SOCIAL_URLS = {
 
     renderProfile(data, views);
 
+    // Check for active device alerts
+    checkActiveAlerts(profileId);
+
+    // Show device dashboard link if device is linked
+    if (data.deviceId) {
+      const dashLink = document.getElementById('deviceDashboardLink');
+      dashLink.href = `device.html?id=${profileId}`;
+      dashLink.classList.remove('hidden');
+    }
+
   } catch (error) {
     console.error('Error:', error);
     showError();
@@ -324,4 +334,104 @@ function escapeHtml(str) {
   const div = document.createElement('div');
   div.textContent = str;
   return div.innerHTML;
+}
+
+// ===== Device Alert System =====
+let activeAlertId = null;
+let alertMiniMap = null;
+
+async function checkActiveAlerts(profileId) {
+  try {
+    const { data, error } = await supabase
+      .from('device_alerts')
+      .select('*')
+      .eq('profile_id', profileId)
+      .eq('resolved', false)
+      .neq('alert_type', 'heartbeat')
+      .order('timestamp', { ascending: false })
+      .limit(1);
+
+    if (data && data.length > 0) {
+      showAlertBanner(data[0]);
+    }
+
+    // Subscribe to realtime alerts
+    supabase
+      .channel('view-alerts-' + profileId)
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'device_alerts',
+        filter: `profile_id=eq.${profileId}`
+      }, (payload) => {
+        const alert = payload.new;
+        if (alert.alert_type !== 'heartbeat' && !alert.resolved) {
+          showAlertBanner(alert);
+        }
+      })
+      .subscribe();
+
+  } catch (err) {
+    // Silently fail - alerts are optional
+    console.log('Alert check skipped:', err.message);
+  }
+}
+
+function showAlertBanner(alert) {
+  activeAlertId = alert.id;
+  const banner = document.getElementById('deviceAlertBanner');
+  banner.classList.remove('hidden');
+
+  const meta = document.getElementById('alertBannerMeta');
+  const time = new Date(alert.timestamp).toLocaleString();
+  meta.textContent = `${alert.alert_type.toUpperCase()} triggered at ${time}`;
+
+  // Show resolve button
+  document.getElementById('alertResolveBtn').classList.remove('hidden');
+
+  // Show mini map if GPS data
+  if (alert.latitude && alert.longitude && typeof L !== 'undefined') {
+    const mapEl = document.getElementById('alertMiniMap');
+    mapEl.classList.remove('hidden');
+
+    if (!alertMiniMap) {
+      alertMiniMap = L.map('alertMiniMap', {
+        center: [alert.latitude, alert.longitude],
+        zoom: 15,
+        zoomControl: false,
+        attributionControl: false
+      });
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(alertMiniMap);
+    }
+
+    L.circleMarker([alert.latitude, alert.longitude], {
+      radius: 10,
+      fillColor: '#ff3b30',
+      color: '#ff3b30',
+      weight: 2,
+      fillOpacity: 0.6
+    }).addTo(alertMiniMap);
+
+    alertMiniMap.setView([alert.latitude, alert.longitude], 15);
+  }
+}
+
+async function resolveAlertFromView() {
+  if (!activeAlertId) return;
+  const btn = document.getElementById('alertResolveBtn');
+  btn.textContent = 'Resolving...';
+  btn.disabled = true;
+
+  try {
+    await supabase
+      .from('device_alerts')
+      .update({ resolved: true })
+      .eq('id', activeAlertId);
+
+    document.getElementById('deviceAlertBanner').classList.add('hidden');
+    activeAlertId = null;
+  } catch (err) {
+    btn.textContent = 'Retry';
+    btn.disabled = false;
+  }
 }

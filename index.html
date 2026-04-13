@@ -29,6 +29,9 @@
         </div>
         Kairo's<span>Help</span>
       </a>
+      <div class="navbar-actions">
+        <a href="docs/hardware-guide.html" class="btn btn-secondary" style="padding:8px 16px;font-size:0.8125rem">Hardware Guide</a>
+      </div>
     </div>
   </nav>
 
@@ -199,6 +202,25 @@
             <div class="form-group" style="margin-top:16px">
               <label class="form-label">Additional Notes</label>
               <textarea class="form-textarea" id="notes" placeholder="Organ donor, insurance, preferred hospital..." rows="2"></textarea>
+            </div>
+          </div>
+
+          <!-- Smart Device -->
+          <div class="form-section-card">
+            <div class="section-header">
+              <div class="section-icon green">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+              </div>
+              <div>
+                <div class="section-title">Smart Device</div>
+                <div class="section-subtitle">Link your Kairo wearable (optional)</div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Device ID</label>
+              <input type="text" class="form-input" id="deviceId" placeholder="e.g. KAIRO-001" style="font-family:'Courier New',monospace;letter-spacing:0.05em">
+              <div style="font-size:0.75rem;color:var(--text-tertiary);margin-top:6px">Find this on your Kairo wearable OLED screen or in the firmware config. Leave blank if no device.</div>
             </div>
           </div>
 

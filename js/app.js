@@ -220,7 +220,8 @@ async function generateProfile() {
         contacts: profileData.contacts,
         notes: profileData.notes,
         edit_token: generateUUID(),
-        // Store extended data as JSON in notes or a separate field
+        device_id: profileData.deviceId || null,
+        device_linked: !!profileData.deviceId
       });
 
     if (dbError) throw dbError;
@@ -289,6 +290,7 @@ function collectFormData() {
     socials,
     buttons,
     accentColor: selectedColor,
+    deviceId: document.getElementById('deviceId') ? document.getElementById('deviceId').value.trim() || null : null,
     createdAt: new Date().toISOString()
   };
 }

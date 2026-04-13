@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kairo Wearable - Hardware Build Guide</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    /* ====================================================================
+       BASE RESET AND GLOBAL STYLES
+       ==================================================================== */
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #0a0a0f;
+      color: #e0e0e8;
+      line-height: 1.7;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Subtle animated gradient background */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background:
+        radial-gradient(ellipse at 20% 20%, rgba(168, 85, 247, 0.06) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 80%, rgba(59, 130, 246, 0.06) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 50%, rgba(34, 211, 238, 0.03) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ====================================================================
+       LAYOUT
+       ==================================================================== */
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 24px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ====================================================================
+       TOP NAVIGATION BAR
+       ==================================================================== */
+    .top-nav {
+      padding: 16px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      margin-bottom: 0;
+    }
+
+    .top-nav a {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #a855f7;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      transition: color 0.2s ease;
+    }
+
+    .top-nav a:hover {
+      color: #c084fc;
+    }
+
+    .top-nav svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    /* ====================================================================
+       HERO HEADER
+       ==================================================================== */
+    .hero {
+      text-align: center;
+      padding: 80px 0 60px;
+    }
+
+    .hero-badge {
+      display: inline-block;
+      padding: 6px 16px;
+      border-radius: 20px;
+      background: rgba(168, 85, 247, 0.12);
+      border: 1px solid rgba(168, 85, 247, 0.25);
+      color: #c084fc;
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+    }
+
+    .hero h1 {
+      font-size: clamp(28px, 5vw, 48px);
+      font-weight: 800;
+      line-height: 1.15;
+      margin-bottom: 16px;
+      background: linear-gradient(135deg, #ffffff 0%, #a855f7 50%, #3b82f6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero p {
+      font-size: 17px;
+      color: #9898a8;
+      max-width: 600px;
+      margin: 0 auto;
+      line-height: 1.7;
+    }
+
+    /* ====================================================================
+       GLASS CARD COMPONENT
+       ==================================================================== */
+    .glass-card {
+      background: rgba(255, 255, 255, 0.06);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 32px;
+      margin-bottom: 32px;
+    }
+
+    .glass-card:hover {
+      border-color: rgba(168, 85, 247, 0.15);
+      transition: border-color 0.3s ease;
+    }
+
+    /* ====================================================================
+       SECTION HEADERS
+       ==================================================================== */
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .section-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .section-icon.purple {
+      background: rgba(168, 85, 247, 0.15);
+    }
+
+    .section-icon.blue {
+      background: rgba(59, 130, 246, 0.15);
+    }
+
+    .section-icon.cyan {
+      background: rgba(34, 211, 238, 0.15);
+    }
+
+    .section-icon.red {
+      background: rgba(239, 68, 68, 0.15);
+    }
+
+    .section-icon svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .section-header h2 {
+      font-size: 22px;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    /* ====================================================================
+       PARTS LIST TABLE
+       ==================================================================== */
+    .parts-table-wrapper {
+      overflow-x: auto;
+      margin-top: 8px;
+    }
+
+    .parts-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    .parts-table thead th {
+      text-align: left;
+      padding: 12px 16px;
+      font-weight: 600;
+      font-size: 12px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: #9898a8;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      white-space: nowrap;
+    }
+
+    .parts-table tbody td {
+      padding: 14px 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      vertical-align: middle;
+    }
+
+    .parts-table tbody tr:hover {
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .parts-table .component-name {
+      font-weight: 500;
+      color: #ffffff;
+    }
+
+    .parts-table .optional-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: rgba(59, 130, 246, 0.15);
+      color: #60a5fa;
+      font-size: 11px;
+      font-weight: 500;
+      margin-left: 8px;
+    }
+
+    .parts-table .price {
+      font-family: 'Inter', monospace;
+      font-weight: 600;
+      color: #22d3ee;
+      white-space: nowrap;
+    }
+
+    .total-row td {
+      padding-top: 16px !important;
+      border-bottom: none !important;
+      font-weight: 700;
+      font-size: 15px;
+    }
+
+    .total-row .price {
+      color: #a855f7;
+    }
+
+    /* ====================================================================
+       WIRING DIAGRAM TABLE
+       ==================================================================== */
+    .wiring-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    .wiring-table thead th {
+      text-align: left;
+      padding: 12px 16px;
+      font-weight: 600;
+      font-size: 12px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: #9898a8;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      white-space: nowrap;
+    }
+
+    .wiring-table tbody td {
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      font-family: 'Inter', monospace;
+      font-size: 13px;
+    }
+
+    .wiring-table tbody tr:hover {
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .pin-label {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 12px;
+    }
+
+    .pin-esp32 {
+      background: rgba(168, 85, 247, 0.15);
+      color: #c084fc;
+    }
+
+    .pin-component {
+      background: rgba(34, 211, 238, 0.15);
+      color: #67e8f9;
+    }
+
+    .arrow-cell {
+      text-align: center;
+      color: #6b6b7b;
+      font-size: 16px;
+    }
+
+    /* ====================================================================
+       ASSEMBLY STEPS
+       ==================================================================== */
+    .steps-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .step-card {
+      display: flex;
+      gap: 20px;
+      padding: 24px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 12px;
+      transition: border-color 0.2s ease, background 0.2s ease;
+    }
+
+    .step-card:hover {
+      border-color: rgba(168, 85, 247, 0.2);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .step-number {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, rgba(168, 85, 247, 0.2), rgba(59, 130, 246, 0.2));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 16px;
+      color: #c084fc;
+      flex-shrink: 0;
+    }
+
+    .step-content h3 {
+      font-size: 15px;
+      font-weight: 600;
+      color: #ffffff;
+      margin-bottom: 6px;
+    }
+
+    .step-content p {
+      font-size: 14px;
+      color: #9898a8;
+      line-height: 1.6;
+    }
+
+    .step-content code {
+      background: rgba(168, 85, 247, 0.12);
+      color: #c084fc;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-family: 'Inter', monospace;
+    }
+
+    /* ====================================================================
+       FIRMWARE UPLOAD SECTION
+       ==================================================================== */
+    .firmware-steps {
+      counter-reset: firmware-step;
+    }
+
+    .firmware-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      padding: 16px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    .firmware-step:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .firmware-step::before {
+      counter-increment: firmware-step;
+      content: counter(firmware-step);
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: rgba(59, 130, 246, 0.15);
+      color: #60a5fa;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 600;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .firmware-step-text {
+      font-size: 14px;
+      color: #c8c8d4;
+      line-height: 1.6;
+    }
+
+    .firmware-step-text strong {
+      color: #ffffff;
+      font-weight: 600;
+    }
+
+    .firmware-step-text code {
+      background: rgba(168, 85, 247, 0.1);
+      color: #c084fc;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-family: 'Inter', monospace;
+      word-break: break-all;
+    }
+
+    .url-block {
+      display: block;
+      margin-top: 8px;
+      padding: 10px 14px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 8px;
+      font-family: 'Inter', monospace;
+      font-size: 12px;
+      color: #67e8f9;
+      word-break: break-all;
+      line-height: 1.5;
+    }
+
+    /* ====================================================================
+       WARNING BOX
+       ==================================================================== */
+    .warning-box {
+      background: rgba(239, 68, 68, 0.08);
+      border: 1px solid rgba(239, 68, 68, 0.25);
+      border-radius: 16px;
+      padding: 32px;
+      margin-bottom: 32px;
+    }
+
+    .warning-box .section-header {
+      margin-bottom: 16px;
+    }
+
+    .warning-box h2 {
+      color: #fca5a5 !important;
+    }
+
+    .warning-items {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .warning-items li {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      font-size: 14px;
+      line-height: 1.6;
+      color: #e8b4b4;
+    }
+
+    .warning-items li::before {
+      content: '';
+      display: none;
+    }
+
+    .warning-icon-inline {
+      flex-shrink: 0;
+      margin-top: 3px;
+    }
+
+    .warning-icon-inline svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    /* ====================================================================
+       FOOTER
+       ==================================================================== */
+    .footer {
+      text-align: center;
+      padding: 48px 0;
+      margin-top: 32px;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .footer a {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 28px;
+      background: linear-gradient(135deg, rgba(168, 85, 247, 0.2), rgba(59, 130, 246, 0.2));
+      border: 1px solid rgba(168, 85, 247, 0.25);
+      border-radius: 12px;
+      color: #c084fc;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 15px;
+      transition: all 0.3s ease;
+    }
+
+    .footer a:hover {
+      background: linear-gradient(135deg, rgba(168, 85, 247, 0.3), rgba(59, 130, 246, 0.3));
+      border-color: rgba(168, 85, 247, 0.4);
+      transform: translateY(-1px);
+    }
+
+    .footer a svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .footer-sub {
+      margin-top: 20px;
+      font-size: 13px;
+      color: #6b6b7b;
+    }
+
+    /* ====================================================================
+       RESPONSIVE
+       ==================================================================== */
+    @media (max-width: 640px) {
+      .glass-card, .warning-box {
+        padding: 20px;
+        border-radius: 12px;
+      }
+
+      .hero {
+        padding: 48px 0 40px;
+      }
+
+      .step-card {
+        padding: 16px;
+        gap: 14px;
+      }
+
+      .parts-table thead th,
+      .parts-table tbody td {
+        padding: 10px 12px;
+      }
+
+      .wiring-table thead th,
+      .wiring-table tbody td {
+        padding: 10px 12px;
+        font-size: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <!-- ================================================================
+         TOP NAVIGATION
+         ================================================================ -->
+    <nav class="top-nav">
+      <a href="https://kairo-help.vercel.app">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        Back to Kairo's Help
+      </a>
+    </nav>
+
+    <!-- ================================================================
+         HERO HEADER
+         ================================================================ -->
+    <header class="hero">
+      <div class="hero-badge">Hardware Build Guide</div>
+      <h1>Kairo Wearable - Hardware Build Guide</h1>
+      <p>
+        Build your own emergency wearable device using an ESP32, OLED display,
+        GPS module, and a few other components. Total cost starts at under 1100 INR.
+      </p>
+    </header>
+
+    <!-- ================================================================
+         SECTION 1: PARTS LIST
+         ================================================================ -->
+    <section class="glass-card">
+      <div class="section-header">
+        <div class="section-icon purple">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+          </svg>
+        </div>
+        <h2>Parts List</h2>
+      </div>
+
+      <div class="parts-table-wrapper">
+        <table class="parts-table">
+          <thead>
+            <tr>
+              <th>Component</th>
+              <th>Notes</th>
+              <th>Price</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="component-name">ESP32 DevKit v1</td>
+              <td>Main microcontroller with WiFi and Bluetooth</td>
+              <td class="price">399 INR</td>
+            </tr>
+            <tr>
+              <td class="component-name">SSD1306 OLED 0.96" I2C</td>
+              <td>128x64 pixel display for status info</td>
+              <td class="price">149 INR</td>
+            </tr>
+            <tr>
+              <td class="component-name">Push Button (momentary)</td>
+              <td>SOS trigger button, normally open</td>
+              <td class="price">10 INR</td>
+            </tr>
+            <tr>
+              <td class="component-name">
+                NEO-6M GPS Module
+                <span class="optional-badge">Optional</span>
+              </td>
+              <td>Satellite positioning for location tracking</td>
+              <td class="price">349 INR</td>
+            </tr>
+            <tr>
+              <td class="component-name">
+                SIM800L GSM Module
+                <span class="optional-badge">Optional</span>
+              </td>
+              <td>Cellular connectivity for SMS alerts</td>
+              <td class="price">399 INR</td>
+            </tr>
+            <tr>
+              <td class="component-name">3.7V LiPo Battery 1000mAh</td>
+              <td>Rechargeable lithium polymer cell</td>
+              <td class="price">199 INR</td>
+            </tr>
+            <tr>
+              <td class="component-name">TP4056 Charging Module</td>
+              <td>Micro-USB LiPo charger with protection</td>
+              <td class="price">29 INR</td>
+            </tr>
+            <tr>
+              <td class="component-name">Breadboard + Jumper Wires</td>
+              <td>For prototyping connections</td>
+              <td class="price">99 INR</td>
+            </tr>
+            <tr class="total-row">
+              <td colspan="2">
+                Total Base Kit (without optional modules)
+              </td>
+              <td class="price">~1,085 INR</td>
+            </tr>
+            <tr class="total-row">
+              <td colspan="2">
+                Full Kit (all modules included)
+              </td>
+              <td class="price">~1,833 INR</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ================================================================
+         SECTION 2: WIRING DIAGRAM
+         ================================================================ -->
+    <section class="glass-card">
+      <div class="section-header">
+        <div class="section-icon blue">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2v6"></path>
+            <path d="M12 18v4"></path>
+            <path d="M4.93 4.93l4.24 4.24"></path>
+            <path d="M14.83 14.83l4.24 4.24"></path>
+            <path d="M2 12h6"></path>
+            <path d="M18 12h4"></path>
+            <path d="M4.93 19.07l4.24-4.24"></path>
+            <path d="M14.83 9.17l4.24-4.24"></path>
+          </svg>
+        </div>
+        <h2>Wiring Diagram</h2>
+      </div>
+
+      <table class="wiring-table">
+        <thead>
+          <tr>
+            <th>ESP32 Pin</th>
+            <th></th>
+            <th>Component Pin</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="pin-label pin-esp32">GPIO21 (SDA)</span></td>
+            <td class="arrow-cell">--></td>
+            <td><span class="pin-label pin-component">OLED SDA</span></td>
+            <td>I2C data line</td>
+          </tr>
+          <tr>
+            <td><span class="pin-label pin-esp32">GPIO22 (SCL)</span></td>
+            <td class="arrow-cell">--></td>
+            <td><span class="pin-label pin-component">OLED SCL</span></td>
+            <td>I2C clock line</td>
+          </tr>
+          <tr>
+            <td><span class="pin-label pin-esp32">3.3V</span></td>
+            <td class="arrow-cell">--></td>
+            <td><span class="pin-label pin-component">OLED VCC</span></td>
+            <td>OLED power supply</td>
+          </tr>
+          <tr>
+            <td><span class="pin-label pin-esp32">GND</span></td>
+            <td class="arrow-cell">--></td>
+            <td><span class="pin-label pin-component">OLED GND</span></td>
+            <td>Common ground</td>
+          </tr>
+          <tr>
+            <td><span class="pin-label pin-esp32">GPIO4</span></td>
+            <td class="arrow-cell">--></td>
+            <td><span class="pin-label pin-component">Button --> GND</span></td>
+            <td>SOS button (active LOW, internal pull-up)</td>
+          </tr>
+          <tr>
+            <td><span class="pin-label pin-esp32">GPIO16 (RX2)</span></td>
+            <td class="arrow-cell">--></td>
+            <td><span class="pin-label pin-component">GPS TX</span></td>
+            <td>GPS data out to ESP32 input</td>
+          </tr>
+          <tr>
+            <td><span class="pin-label pin-esp32">GPIO17 (TX2)</span></td>
+            <td class="arrow-cell">--></td>
+            <td><span class="pin-label pin-component">GPS RX</span></td>
+            <td>ESP32 data out to GPS input</td>
+          </tr>
+          <tr>
+            <td><span class="pin-label pin-esp32">GPIO34</span></td>
+            <td class="arrow-cell">--></td>
+            <td><span class="pin-label pin-component">Voltage Divider</span></td>
+            <td>R1=100k, R2=100k from Battery+</td>
+          </tr>
+          <tr>
+            <td colspan="4" style="padding-top: 16px; border-bottom: none;">
+              <strong style="color: #ffffff; font-size: 13px;">Power Connections</strong>
+            </td>
+          </tr>
+          <tr>
+            <td><span class="pin-label pin-component">Battery+</span></td>
+            <td class="arrow-cell">--></td>
+            <td><span class="pin-label pin-component">TP4056 B+</span></td>
+            <td>Battery positive to charger</td>
+          </tr>
+          <tr>
+            <td><span class="pin-label pin-component">Battery-</span></td>
+            <td class="arrow-cell">--></td>
+            <td><span class="pin-label pin-component">TP4056 B-</span></td>
+            <td>Battery negative to charger</td>
+          </tr>
+          <tr>
+            <td><span class="pin-label pin-component">TP4056 OUT+</span></td>
+            <td class="arrow-cell">--></td>
+            <td><span class="pin-label pin-esp32">ESP32 VIN</span></td>
+            <td>Regulated power to ESP32</td>
+          </tr>
+          <tr>
+            <td><span class="pin-label pin-component">TP4056 OUT-</span></td>
+            <td class="arrow-cell">--></td>
+            <td><span class="pin-label pin-esp32">ESP32 GND</span></td>
+            <td>Common ground</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ================================================================
+         SECTION 3: ASSEMBLY STEPS
+         ================================================================ -->
+    <section class="glass-card">
+      <div class="section-header">
+        <div class="section-icon cyan">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#22d3ee" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+          </svg>
+        </div>
+        <h2>Assembly Steps</h2>
+      </div>
+
+      <div class="steps-grid">
+        <div class="step-card">
+          <div class="step-number">1</div>
+          <div class="step-content">
+            <h3>Connect OLED to ESP32 via I2C</h3>
+            <p>
+              Wire the SSD1306 OLED display to the ESP32 using the I2C bus.
+              Connect <code>SDA</code> to <code>GPIO21</code> and <code>SCL</code>
+              to <code>GPIO22</code>. Power the OLED from the ESP32's 3.3V and GND
+              pins. The display uses I2C address <code>0x3C</code>.
+            </p>
+          </div>
+        </div>
+
+        <div class="step-card">
+          <div class="step-number">2</div>
+          <div class="step-content">
+            <h3>Wire SOS Button between GPIO4 and GND</h3>
+            <p>
+              Connect one leg of the momentary push button to <code>GPIO4</code>
+              and the other leg to <code>GND</code>. The firmware enables the
+              internal pull-up resistor, so no external resistor is needed. When
+              pressed, the pin reads LOW and triggers an SOS alert.
+            </p>
+          </div>
+        </div>
+
+        <div class="step-card">
+          <div class="step-number">3</div>
+          <div class="step-content">
+            <h3>Connect GPS Module TX to GPIO16, RX to GPIO17</h3>
+            <p>
+              Wire the NEO-6M GPS module's <code>TX</code> pin to ESP32
+              <code>GPIO16</code> (RX2) and the GPS <code>RX</code> pin to ESP32
+              <code>GPIO17</code> (TX2). Power the GPS from 3.3V. The module
+              communicates at 9600 baud and will take 30-60 seconds to get a
+              first fix outdoors.
+            </p>
+          </div>
+        </div>
+
+        <div class="step-card">
+          <div class="step-number">4</div>
+          <div class="step-content">
+            <h3>Set Up Battery with TP4056 Charge Module</h3>
+            <p>
+              Connect the 3.7V LiPo battery to the TP4056 module: <code>Battery+</code>
+              to <code>B+</code> and <code>Battery-</code> to <code>B-</code>. The
+              TP4056 handles safe charging via its micro-USB port and provides
+              overcharge/overdischarge protection.
+            </p>
+          </div>
+        </div>
+
+        <div class="step-card">
+          <div class="step-number">5</div>
+          <div class="step-content">
+            <h3>Connect TP4056 Output to ESP32 VIN</h3>
+            <p>
+              Wire <code>TP4056 OUT+</code> to the ESP32's <code>VIN</code> pin
+              and <code>TP4056 OUT-</code> to <code>GND</code>. The VIN pin has an
+              onboard regulator that accepts 3.7V from the battery and steps it
+              down to 3.3V for the ESP32 and peripherals.
+            </p>
+          </div>
+        </div>
+
+        <div class="step-card">
+          <div class="step-number">6</div>
+          <div class="step-content">
+            <h3>Add Voltage Divider for Battery Monitoring</h3>
+            <p>
+              Create a voltage divider using two 100k-ohm resistors in series from
+              <code>Battery+</code> to <code>GND</code>. Connect the midpoint (junction
+              between the two resistors) to <code>GPIO34</code>. This halves the battery
+              voltage so the ESP32 ADC can safely measure it (max 3.3V input). The
+              firmware maps 3.0V-4.2V to 0-100% charge level.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================
+         SECTION 4: FIRMWARE UPLOAD GUIDE
+         ================================================================ -->
+    <section class="glass-card">
+      <div class="section-header">
+        <div class="section-icon blue">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="16 18 22 12 16 6"></polyline>
+            <polyline points="8 6 2 12 8 18"></polyline>
+          </svg>
+        </div>
+        <h2>Firmware Upload Guide</h2>
+      </div>
+
+      <div class="firmware-steps">
+        <div class="firmware-step">
+          <div class="firmware-step-text">
+            <strong>Install Arduino IDE 2.0+</strong> from the official Arduino website.
+            This is the development environment used to compile and upload firmware
+            to the ESP32.
+          </div>
+        </div>
+
+        <div class="firmware-step">
+          <div class="firmware-step-text">
+            <strong>Add ESP32 board support.</strong> In Arduino IDE, go to
+            <strong>File &gt; Preferences</strong> and add this URL to the
+            <strong>Additional Board Manager URLs</strong> field:
+            <span class="url-block">https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json</span>
+            Then open <strong>Tools &gt; Board &gt; Boards Manager</strong>, search for
+            <code>esp32</code>, and install the package by Espressif Systems.
+          </div>
+        </div>
+
+        <div class="firmware-step">
+          <div class="firmware-step-text">
+            <strong>Install required libraries.</strong> Open
+            <strong>Sketch &gt; Include Library &gt; Manage Libraries</strong> and search for
+            and install each of these:
+            <code>Adafruit SSD1306</code>,
+            <code>Adafruit GFX</code>,
+            <code>TinyGPSPlus</code>, and
+            <code>ArduinoJson</code>.
+            Accept any dependency prompts that appear.
+          </div>
+        </div>
+
+        <div class="firmware-step">
+          <div class="firmware-step-text">
+            <strong>Open and configure the firmware.</strong> Open
+            <code>kairo-device.ino</code> in Arduino IDE. Edit the configuration
+            block at the top of the file: set your WiFi SSID and password, and paste
+            your Kairo's Help profile ID from the dashboard.
+          </div>
+        </div>
+
+        <div class="firmware-step">
+          <div class="firmware-step-text">
+            <strong>Select board and upload.</strong> Go to
+            <strong>Tools &gt; Board</strong> and select <strong>ESP32 Dev Module</strong>.
+            Select the correct <strong>COM port</strong> under
+            <strong>Tools &gt; Port</strong>. Click the <strong>Upload</strong> button
+            (right arrow icon). The firmware will compile and flash to the ESP32. Open
+            <strong>Tools &gt; Serial Monitor</strong> at 115200 baud to see debug output.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================
+         SECTION 5: POWER SUPPLY WARNING
+         ================================================================ -->
+    <section class="warning-box">
+      <div class="section-header">
+        <div class="section-icon red">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+            <line x1="12" y1="9" x2="12" y2="13"></line>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+          </svg>
+        </div>
+        <h2>Power Supply Warning</h2>
+      </div>
+
+      <ul class="warning-items">
+        <li>
+          <span class="warning-icon-inline">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="15" y1="9" x2="9" y2="15"></line>
+              <line x1="9" y1="9" x2="15" y2="15"></line>
+            </svg>
+          </span>
+          <span>
+            <strong>SIM800L requires 3.7V and up to 2A peak current</strong> during
+            GSM transmission bursts. The ESP32's onboard regulator cannot supply this.
+            Insufficient power will cause the SIM800L to reset or fail to register
+            on the network.
+          </span>
+        </li>
+        <li>
+          <span class="warning-icon-inline">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="15" y1="9" x2="9" y2="15"></line>
+              <line x1="9" y1="9" x2="15" y2="15"></line>
+            </svg>
+          </span>
+          <span>
+            <strong>Never power the SIM800L from the ESP32's 3.3V pin.</strong> The
+            3.3V regulator on the ESP32 DevKit can only supply about 500mA, which is
+            far below the SIM800L's peak demand. This can damage both the regulator
+            and the GSM module.
+          </span>
+        </li>
+        <li>
+          <span class="warning-icon-inline">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="15" y1="9" x2="9" y2="15"></line>
+              <line x1="9" y1="9" x2="15" y2="15"></line>
+            </svg>
+          </span>
+          <span>
+            <strong>Always use the LiPo battery directly for SIM800L VCC.</strong>
+            Connect the battery's 3.7V output straight to the SIM800L power input.
+            Add a large capacitor (1000uF electrolytic) across the SIM800L power
+            pins to handle current spikes during transmission.
+          </span>
+        </li>
+      </ul>
+    </section>
+
+    <!-- ================================================================
+         FOOTER
+         ================================================================ -->
+    <footer class="footer">
+      <a href="https://kairo-help.vercel.app">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+          <polyline points="9 22 9 12 15 12 15 22"></polyline>
+        </svg>
+        Back to Kairo's Help
+      </a>
+      <p class="footer-sub">
+        Kairo's Help -- Emergency safety for everyone.
+      </p>
+    </footer>
+
+  </div>
+</body>
+</html>

@@ -7,6 +7,7 @@
   <meta name="theme-color" content="#0a0a0f">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <link rel="stylesheet" href="css/style.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28'><rect width='28' height='28' rx='6' fill='%23a855f7'/><path d='M14 7v14M7 14h14' stroke='white' stroke-width='3' stroke-linecap='round'/></svg>">
 </head>
@@ -47,6 +48,20 @@
         <div class="profile-bio" id="profileBio"><span class="typing-cursor"></span></div>
         <div class="profile-badges" id="profileBadges"></div>
       </div>
+
+      <!-- Device Alert Banner (shown when active SOS) -->
+      <div class="emergency-alert-active hidden" id="deviceAlertBanner">
+        <div class="alert-title">EMERGENCY ALERT ACTIVE</div>
+        <div class="alert-meta" id="alertBannerMeta">SOS triggered</div>
+        <div class="map-container mini hidden" id="alertMiniMap" style="margin-top:12px"></div>
+        <button class="alert-resolve-btn hidden" id="alertResolveBtn" onclick="resolveAlertFromView()">Mark as Resolved</button>
+      </div>
+
+      <!-- Device Dashboard Link -->
+      <a href="#" class="btn btn-secondary hidden" id="deviceDashboardLink" style="width:100%;margin-bottom:16px;font-size:0.8125rem">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+        Device Dashboard
+      </a>
 
       <!-- Custom Buttons -->
       <div class="profile-links" id="profileLinks"></div>
@@ -125,7 +140,8 @@
     </div>
   </div>
 
-  <!-- Supabase SDK -->
+  <!-- Leaflet + Supabase -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="js/firebase-config.js"></script>
   <script src="js/view.js"></script>

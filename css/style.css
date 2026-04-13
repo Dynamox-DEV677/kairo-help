@@ -1448,6 +1448,335 @@ h3 { font-size: 1.25rem; font-weight: 600; }
 .mt-2 { margin-top: 8px; }
 .mt-4 { margin-top: 16px; }
 
+/* ===== DEVICE & ALERT SYSTEM ===== */
+
+/* --- Emergency Alert Banner --- */
+.emergency-alert-active {
+  background: linear-gradient(135deg, #ff3b30, #cc0000);
+  border: 1px solid rgba(255,59,48,0.4);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  text-align: center;
+  color: white;
+  margin-bottom: 16px;
+  animation: emergencyPulse 1.5s ease-in-out infinite;
+  position: relative;
+  overflow: hidden;
+}
+
+.emergency-alert-active::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(255,255,255,0.1), transparent 70%);
+  animation: overlayPulse 2s ease-in-out infinite;
+}
+
+@keyframes emergencyPulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(255,59,48,0.4); }
+  50% { box-shadow: 0 0 40px rgba(255,59,48,0.7), 0 0 80px rgba(255,59,48,0.25); }
+}
+
+@keyframes overlayPulse {
+  0%, 100% { opacity: 0; }
+  50% { opacity: 1; }
+}
+
+.alert-title {
+  font-size: 1.125rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 4px;
+  position: relative;
+  z-index: 1;
+}
+
+.alert-meta {
+  font-size: 0.8125rem;
+  opacity: 0.85;
+  position: relative;
+  z-index: 1;
+}
+
+.alert-resolve-btn {
+  margin-top: 12px;
+  padding: 10px 24px;
+  background: rgba(255,255,255,0.2);
+  border: 1px solid rgba(255,255,255,0.4);
+  color: white;
+  border-radius: var(--radius-full);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: all var(--transition);
+  position: relative;
+  z-index: 1;
+}
+
+.alert-resolve-btn:hover {
+  background: rgba(255,255,255,0.3);
+}
+
+/* --- Device Status Indicators --- */
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.status-dot.online {
+  background: var(--neon-green);
+  box-shadow: 0 0 8px rgba(16,185,129,0.6);
+}
+
+.status-dot.alert {
+  background: #ff3b30;
+  box-shadow: 0 0 8px rgba(255,59,48,0.6);
+  animation: statusBlink 1s infinite;
+}
+
+.status-dot.offline {
+  background: rgba(255,255,255,0.2);
+}
+
+@keyframes statusBlink {
+  50% { opacity: 0.3; }
+}
+
+/* --- Map Container --- */
+.map-container {
+  width: 100%;
+  height: 300px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.map-container.mini {
+  height: 180px;
+  margin-top: 12px;
+}
+
+.leaflet-tile-pane {
+  filter: invert(1) hue-rotate(180deg) brightness(0.8) contrast(1.2);
+}
+
+/* --- Battery Level Bar --- */
+.battery-bar-container {
+  width: 100%;
+  height: 8px;
+  background: var(--bg-input);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.battery-bar {
+  height: 100%;
+  border-radius: var(--radius-full);
+  transition: width 0.5s ease, background 0.5s ease;
+}
+
+.battery-bar.high { background: var(--neon-green); box-shadow: 0 0 8px rgba(16,185,129,0.4); }
+.battery-bar.medium { background: #eab308; box-shadow: 0 0 8px rgba(234,179,8,0.4); }
+.battery-bar.low { background: #ff3b30; animation: batteryLow 1s infinite; }
+
+@keyframes batteryLow {
+  50% { opacity: 0.5; }
+}
+
+.battery-text {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+  margin-top: 6px;
+}
+
+/* --- Alert Cards --- */
+.alert-card {
+  background: var(--bg-glass);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 14px 18px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  animation: slideIn 0.3s ease;
+}
+
+.alert-card.sos { border-left: 3px solid #ff3b30; }
+.alert-card.fall { border-left: 3px solid #f97316; }
+.alert-card.geofence { border-left: 3px solid #eab308; }
+.alert-card.heartbeat { border-left: 3px solid var(--neon-green); }
+
+.alert-type-badge {
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+}
+
+.alert-type-badge.sos { background: rgba(255,59,48,0.15); color: #ff6b6b; }
+.alert-type-badge.fall { background: rgba(249,115,22,0.15); color: #fb923c; }
+.alert-type-badge.geofence { background: rgba(234,179,8,0.15); color: #facc15; }
+.alert-type-badge.heartbeat { background: rgba(16,185,129,0.15); color: #34d399; }
+
+.alert-card-info { flex: 1; min-width: 0; }
+.alert-card-time { font-size: 0.8125rem; font-weight: 600; }
+.alert-card-coords { font-size: 0.75rem; color: var(--text-tertiary); }
+
+.alert-card .alert-resolve-btn {
+  margin-top: 0;
+  padding: 6px 14px;
+  font-size: 0.75rem;
+}
+
+/* --- Heartbeat SVG Line --- */
+.heartbeat-line {
+  stroke: var(--neon-green);
+  stroke-width: 2;
+  fill: none;
+  stroke-dasharray: 300;
+  stroke-dashoffset: 300;
+  animation: heartbeatDraw 2.5s linear infinite;
+}
+
+@keyframes heartbeatDraw {
+  0% { stroke-dashoffset: 300; }
+  100% { stroke-dashoffset: -300; }
+}
+
+/* --- Dashboard Layout --- */
+.dashboard-container {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 24px 16px 64px;
+  position: relative;
+  z-index: 1;
+}
+
+.dashboard-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.dashboard-header h1 {
+  font-size: 1.5rem;
+  margin-bottom: 4px;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 640px) {
+  .dashboard-grid { grid-template-columns: 1fr; }
+}
+
+.dashboard-card {
+  background: var(--bg-glass);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  padding: 20px;
+}
+
+.dashboard-card.full-width {
+  grid-column: 1 / -1;
+}
+
+.card-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 10px;
+}
+
+.card-value {
+  font-size: 1.5rem;
+  font-weight: 800;
+}
+
+.card-value.small {
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+.device-id-text {
+  font-family: 'Courier New', monospace;
+  color: var(--neon-cyan);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.status-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-text {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.status-text.online { color: var(--neon-green); }
+.status-text.offline { color: var(--text-tertiary); }
+.status-text.alert { color: #ff3b30; }
+
+/* --- Link Device Card --- */
+.link-device-card {
+  background: var(--bg-glass);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  padding: 40px 32px;
+  text-align: center;
+  max-width: 420px;
+  margin: 60px auto;
+}
+
+.link-device-card h2 { margin-bottom: 8px; }
+.link-device-card p { color: var(--text-secondary); margin-bottom: 24px; }
+
+.link-device-card .form-input {
+  text-align: center;
+  margin-bottom: 16px;
+  font-family: 'Courier New', monospace;
+  font-size: 1.125rem;
+  letter-spacing: 0.1em;
+}
+
+/* --- Alert Feed Section --- */
+.alert-feed {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.alert-feed::-webkit-scrollbar { width: 4px; }
+.alert-feed::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-tertiary);
+  font-size: 0.875rem;
+}
+
 /* ===== SCROLLBAR ===== */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }

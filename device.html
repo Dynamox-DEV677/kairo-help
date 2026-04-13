@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Device Dashboard - Kairo's Help</title>
+  <meta name="theme-color" content="#0a0a0f">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28'><rect width='28' height='28' rx='6' fill='%23a855f7'/><path d='M14 7v14M7 14h14' stroke='white' stroke-width='3' stroke-linecap='round'/></svg>">
+</head>
+<body>
+
+  <!-- Animated Background -->
+  <div class="bg-animation">
+    <div class="bg-blob"></div>
+    <div class="bg-blob"></div>
+    <div class="bg-blob"></div>
+  </div>
+  <div class="bg-grid"></div>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="navbar-inner">
+      <a href="index.html" class="navbar-brand">
+        <div class="logo-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        </div>
+        Kairo's<span>Help</span>
+      </a>
+      <div class="navbar-actions">
+        <span style="font-size:0.8125rem;color:var(--text-tertiary)">Device Dashboard</span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Loading -->
+  <div class="view-loading" id="pageLoading">
+    <div class="spinner"></div>
+    <p style="color:var(--text-secondary)">Loading device data...</p>
+  </div>
+
+  <!-- No Profile Error -->
+  <div class="view-error hidden" id="pageError">
+    <h2>No Profile Found</h2>
+    <p>Link a device from your profile builder first.</p>
+    <a href="index.html" class="btn btn-primary mt-4">Create Profile</a>
+  </div>
+
+  <!-- Link Device Flow -->
+  <div class="hidden" id="linkDeviceSection">
+    <div class="link-device-card">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--neon-green)" stroke-width="1.5" style="margin-bottom:16px">
+        <rect x="5" y="2" width="14" height="20" rx="2"/>
+        <line x1="12" y1="18" x2="12.01" y2="18"/>
+      </svg>
+      <h2>Link Your Kairo Device</h2>
+      <p>Enter the device ID shown on your wearable's screen to connect it to this profile.</p>
+      <input type="text" class="form-input" id="linkDeviceIdInput" placeholder="KAIRO-001" style="font-family:'Courier New',monospace;letter-spacing:0.1em">
+      <button class="btn btn-primary" onclick="linkDevice()" style="width:100%">Link Device</button>
+    </div>
+  </div>
+
+  <!-- Dashboard -->
+  <div class="hidden" id="dashboardSection">
+    <div class="dashboard-container">
+
+      <!-- Header -->
+      <div class="dashboard-header">
+        <h1>Device Dashboard</h1>
+        <p style="color:var(--text-secondary);font-size:0.875rem" id="profileNameDisplay"></p>
+      </div>
+
+      <!-- Heartbeat SVG decoration -->
+      <svg width="100%" height="40" viewBox="0 0 600 40" preserveAspectRatio="none" style="margin-bottom:16px;opacity:0.5">
+        <path class="heartbeat-line" d="M0,20 L100,20 L120,5 L140,35 L160,10 L180,30 L200,20 L300,20 L320,5 L340,35 L360,10 L380,30 L400,20 L500,20 L520,5 L540,35 L560,10 L580,30 L600,20"/>
+      </svg>
+
+      <!-- Status Cards -->
+      <div class="dashboard-grid">
+
+        <!-- Device Status -->
+        <div class="dashboard-card">
+          <div class="card-label">Device Status</div>
+          <div class="status-row">
+            <div class="status-dot" id="statusDot"></div>
+            <span class="status-text" id="statusText">Checking...</span>
+          </div>
+          <div style="margin-top:10px">
+            <div class="card-label" style="margin-bottom:4px">Device ID</div>
+            <div class="device-id-text" id="deviceIdDisplay">--</div>
+          </div>
+        </div>
+
+        <!-- Battery -->
+        <div class="dashboard-card">
+          <div class="card-label">Battery Level</div>
+          <div class="card-value" id="batteryValue">--</div>
+          <div class="battery-bar-container" style="margin-top:10px">
+            <div class="battery-bar high" id="batteryBar" style="width:0%"></div>
+          </div>
+          <div class="battery-text">
+            <span id="batteryPercent">0%</span>
+            <span id="lastHeartbeat">Last seen: --</span>
+          </div>
+        </div>
+
+        <!-- Map -->
+        <div class="dashboard-card full-width">
+          <div class="card-label">Last Known Location</div>
+          <div class="map-container" id="deviceMap"></div>
+          <div style="font-size:0.75rem;color:var(--text-tertiary);margin-top:8px" id="coordsText">Waiting for GPS data...</div>
+        </div>
+
+      </div>
+
+      <!-- Active Alerts -->
+      <div class="dashboard-card" style="margin-bottom:16px">
+        <div class="card-label" style="display:flex;align-items:center;justify-content:space-between">
+          <span>Active Alerts</span>
+          <span id="activeAlertCount" style="color:var(--neon-green)">0</span>
+        </div>
+        <div class="alert-feed" id="activeAlertFeed">
+          <div class="empty-state">No active alerts. All clear.</div>
+        </div>
+      </div>
+
+      <!-- Alert History -->
+      <div class="dashboard-card">
+        <div class="card-label">Alert History</div>
+        <div class="alert-feed" id="alertHistory">
+          <div class="empty-state">No alerts recorded yet.</div>
+        </div>
+      </div>
+
+      <!-- View Profile Link -->
+      <div style="text-align:center;margin-top:24px">
+        <a id="viewProfileLink" href="#" class="btn btn-secondary">View Public Profile</a>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- Supabase SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/device.js"></script>
+</body>
+</html>
