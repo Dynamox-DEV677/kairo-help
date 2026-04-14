@@ -24,12 +24,22 @@ const SOCIAL_PLATFORMS = [
 
 // ===== Start Builder =====
 function startBuilder() {
-  document.getElementById('hero').classList.add('hidden');
-  document.getElementById('builderArea').classList.remove('hidden');
+  const hero = document.getElementById('hero');
+  const builder = document.getElementById('builderArea');
+  if (hero) hero.classList.add('hidden');
+  if (builder) builder.classList.remove('hidden');
   addSocialLink();
   addCustomBtn();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
+
+// Auto-init on create page (no hero toggle needed)
+document.addEventListener('DOMContentLoaded', function() {
+  if (!document.getElementById('hero') && document.getElementById('socialLinksContainer')) {
+    addSocialLink();
+    addCustomBtn();
+  }
+});
 
 // ===== Live Preview =====
 function updatePreview() {
@@ -55,7 +65,7 @@ function updatePreview() {
     const label = entry.querySelector('[data-field="btnLabel"]').value.trim();
     if (label) {
       const div = document.createElement('div');
-      div.className = 'preview-link-btn';
+      div.className = 'pv-btn';
       div.textContent = label;
       btnContainer.appendChild(div);
     }
@@ -71,7 +81,7 @@ function updatePreview() {
       const platform = SOCIAL_PLATFORMS.find(p => p.value === select.value);
       if (platform) {
         const icon = document.createElement('div');
-        icon.className = 'preview-social-icon';
+        icon.className = 'pv-social';
         icon.textContent = platform.icon;
         socialsContainer.appendChild(icon);
       }
@@ -105,9 +115,9 @@ function addSocialLink() {
   ).join('');
 
   entry.innerHTML = `
-    <select class="form-select" onchange="updatePreview()">${optionsHtml}</select>
-    <input type="text" class="form-input" placeholder="URL or @username" data-field="socialUrl" oninput="updatePreview()">
-    <button class="remove-btn" onclick="this.parentElement.remove();updatePreview()">×</button>
+    <select class="c-input c-select" onchange="updatePreview()">${optionsHtml}</select>
+    <input type="text" class="c-input" placeholder="URL or @username" data-field="socialUrl" oninput="updatePreview()">
+    <button class="c-remove" onclick="this.parentElement.remove();updatePreview()">x</button>
   `;
   container.appendChild(entry);
 }
@@ -118,16 +128,16 @@ function addCustomBtn() {
   const entry = document.createElement('div');
   entry.className = 'custom-btn-entry';
   entry.innerHTML = `
-    <input type="text" class="form-input" placeholder="Button Label" data-field="btnLabel" oninput="updatePreview()">
-    <input type="text" class="form-input" placeholder="https://..." data-field="btnUrl">
-    <button class="remove-btn" onclick="this.parentElement.remove();updatePreview()">×</button>
+    <input type="text" class="c-input" placeholder="Button Label" data-field="btnLabel" oninput="updatePreview()">
+    <input type="text" class="c-input" placeholder="https://..." data-field="btnUrl">
+    <button class="c-remove" onclick="this.parentElement.remove();updatePreview()">x</button>
   `;
   container.appendChild(entry);
 }
 
 // ===== Tags Input =====
 document.addEventListener('keydown', function(e) {
-  if (e.target.classList.contains('tags-input')) {
+  if (e.target.classList.contains('tags-input') || e.target.classList.contains('c-tags-input')) {
     if (e.key === 'Enter' || e.key === ',') {
       e.preventDefault();
       const input = e.target;
@@ -197,9 +207,9 @@ async function generateProfile() {
     return;
   }
 
-  const btn = document.querySelector('.btn-generate');
+  const btn = document.querySelector('.btn-generate') || document.querySelector('.c-generate');
   btn.disabled = true;
-  btn.innerHTML = '<span class="spinner" style="width:20px;height:20px;border-width:2px;display:inline-block"></span> Generating...';
+  btn.innerHTML = '<span class="spinner"></span> Creating...';
 
   const profileData = collectFormData();
   const shortId = generateShortId();
@@ -240,7 +250,7 @@ async function generateProfile() {
     showResult(shortId);
   } finally {
     btn.disabled = false;
-    btn.innerHTML = 'Generate My Profile';
+    btn.innerHTML = 'Create Profile';
   }
 }
 
@@ -335,7 +345,7 @@ function generateQRCode(url) {
 function copyUrl() {
   const input = document.getElementById('resultUrl');
   navigator.clipboard.writeText(input.value).then(() => {
-    const btn = document.querySelector('.copy-btn');
+    const btn = document.querySelector('.copy-btn') || document.querySelector('.modal-copy');
     btn.classList.add('copied');
     btn.textContent = 'Copied!';
     setTimeout(() => { btn.classList.remove('copied'); btn.textContent = 'Copy'; }, 2000);
@@ -360,7 +370,7 @@ function closeModal() {
 }
 
 // Close modal on overlay click
-document.querySelectorAll('.modal-overlay').forEach(overlay => {
+document.querySelectorAll('.modal-overlay, .modal-bg').forEach(overlay => {
   overlay.addEventListener('click', function(e) {
     if (e.target === this) this.classList.remove('active');
   });

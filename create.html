@@ -4,305 +4,222 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Create Profile - Kairo</title>
-  <meta name="description" content="Create a stunning personal profile page with social links, emergency info, and custom buttons. Share it with one link.">
+  <meta name="description" content="Create your Kairo safety profile. Add medical info, emergency contacts, and link your wearable device.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28'><rect width='28' height='28' rx='6' fill='%23a855f7'/><path d='M14 7v14M7 14h14' stroke='white' stroke-width='3' stroke-linecap='round'/></svg>">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/landing.css">
+  <link rel="stylesheet" href="css/create.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28'><rect width='28' height='28' rx='6' fill='%23fff'/><path d='M14 7v14M7 14h14' stroke='%23111' stroke-width='3' stroke-linecap='round'/></svg>">
 </head>
 <body>
 
-  <!-- Animated Background -->
-  <div class="bg-animation">
-    <div class="bg-blob"></div>
-    <div class="bg-blob"></div>
-    <div class="bg-blob"></div>
-  </div>
-  <div class="bg-grid"></div>
-
   <!-- Navbar -->
-  <nav class="navbar">
-    <div class="navbar-inner">
-      <a href="index.html" class="navbar-brand">
-        <div class="logo-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-        </div>
-        Kairo's<span>Help</span>
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><rect width="28" height="28" rx="7" fill="#fff"/><path d="M14 8v12M8 14h12" stroke="#111" stroke-width="3" stroke-linecap="round"/></svg>
+        Kairo
       </a>
-      <div class="navbar-actions">
-        <a href="docs/hardware-guide.html" class="btn btn-secondary" style="padding:8px 16px;font-size:0.8125rem">Hardware Guide</a>
+      <div class="nav-right">
+        <a href="docs/hardware-guide.html" class="btn-ghost" style="padding:8px 18px;font-size:0.8125rem">Hardware Guide</a>
       </div>
     </div>
   </nav>
 
-  <!-- Hero Section -->
-  <section class="hero" id="hero">
-    <div class="hero-badge">Next-Gen Profile Pages</div>
-    <h1><span class="gradient-text">Your Personal Page,</span><br>One Link Away</h1>
-    <p>Create a stunning profile with social links, custom buttons, emergency info, and beautiful animations. Share it anywhere.</p>
-    <button class="hero-cta" onclick="startBuilder()">
-      Create My Profile
-      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-    </button>
-    <div class="hero-features">
-      <div class="hero-feature">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-        100% Free
-      </div>
-      <div class="hero-feature">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-        No App Required
-      </div>
-      <div class="hero-feature">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-        Animated & Beautiful
-      </div>
-    </div>
-  </section>
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="section-tag">Create Profile</div>
+    <h1>Set Up Your<br><span class="text-white">Safety Profile</span></h1>
+    <p class="page-desc">Add medical info, emergency contacts, and link your Kairo device. Takes 2 minutes.</p>
+  </div>
 
-  <!-- Builder Area -->
-  <div id="builderArea" class="hidden">
-    <div class="container">
-      <div class="builder-layout">
+  <!-- Builder -->
+  <div class="create-container">
+    <div class="create-layout">
 
-        <!-- Left: Form -->
-        <div class="builder-form">
+      <!-- Form Column -->
+      <div class="form-col">
 
-          <!-- Profile Info -->
-          <div class="form-section-card">
-            <div class="section-header">
-              <div class="section-icon purple">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-              </div>
-              <div>
-                <div class="section-title">Profile Info</div>
-                <div class="section-subtitle">Your basic details</div>
-              </div>
+        <!-- Profile Info -->
+        <div class="c-card">
+          <div class="c-card-head">
+            <div class="c-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
             </div>
-
-            <div style="display:flex;align-items:center;gap:20px;margin-bottom:18px">
-              <div class="avatar-upload" id="avatarUpload">
-                <span class="upload-icon">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
-                </span>
-                <input type="file" accept="image/*" id="avatarInput" onchange="handleAvatar(this)">
-              </div>
-              <div style="flex:1">
-                <div class="form-group">
-                  <label class="form-label">Display Name *</label>
-                  <input type="text" class="form-input" id="displayName" placeholder="Your name" oninput="updatePreview()">
-                </div>
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label class="form-label">Username</label>
-              <input type="text" class="form-input" id="username" placeholder="@coolname" oninput="updatePreview()">
-            </div>
-
-            <div class="form-group">
-              <label class="form-label">Short Bio</label>
-              <textarea class="form-textarea" id="bio" placeholder="Developer, gamer, creator..." oninput="updatePreview()" rows="2"></textarea>
+            <div>
+              <div class="c-title">Profile Info</div>
+              <div class="c-sub">Basic details for identification</div>
             </div>
           </div>
 
-          <!-- Social Links -->
-          <div class="form-section-card">
-            <div class="section-header">
-              <div class="section-icon cyan">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#22d3ee" stroke-width="2"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
-              </div>
-              <div>
-                <div class="section-title">Social Links</div>
-                <div class="section-subtitle">Connect your socials</div>
-              </div>
+          <div class="avatar-row">
+            <div class="c-avatar" id="avatarUpload">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+              <input type="file" accept="image/*" id="avatarInput" onchange="handleAvatar(this)">
             </div>
-            <div id="socialLinksContainer"></div>
-            <button class="add-btn" onclick="addSocialLink()">+ Add Social Link</button>
-          </div>
-
-          <!-- Custom Buttons -->
-          <div class="form-section-card">
-            <div class="section-header">
-              <div class="section-icon blue">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2"><rect x="3" y="8" width="18" height="8" rx="4"/></svg>
-              </div>
-              <div>
-                <div class="section-title">Custom Buttons</div>
-                <div class="section-subtitle">Add links with custom labels</div>
-              </div>
-            </div>
-            <div id="customBtnsContainer"></div>
-            <button class="add-btn" onclick="addCustomBtn()">+ Add Custom Button</button>
-          </div>
-
-          <!-- Emergency Info -->
-          <div class="form-section-card">
-            <div class="section-header">
-              <div class="section-icon pink">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ec4899" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-              </div>
-              <div>
-                <div class="section-title">Emergency Info</div>
-                <div class="section-subtitle">Medical details for first responders</div>
-              </div>
-            </div>
-
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label">Blood Type</label>
-                <select class="form-select" id="bloodType" onchange="updatePreview()">
-                  <option value="">Select</option>
-                  <option>A+</option><option>A-</option>
-                  <option>B+</option><option>B-</option>
-                  <option>AB+</option><option>AB-</option>
-                  <option>O+</option><option>O-</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label class="form-label">Age</label>
-                <input type="number" class="form-input" id="age" placeholder="28" min="0" max="150">
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label class="form-label">Allergies</label>
-              <div class="tags-input-wrapper" id="allergiesWrapper">
-                <input type="text" class="tags-input" id="allergiesInput" placeholder="Type & press Enter" data-target="allergies">
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label class="form-label">Medications</label>
-              <div class="tags-input-wrapper" id="medicationsWrapper">
-                <input type="text" class="tags-input" id="medicationsInput" placeholder="Type & press Enter" data-target="medications">
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label class="form-label">Conditions</label>
-              <div class="tags-input-wrapper" id="conditionsWrapper">
-                <input type="text" class="tags-input" id="conditionsInput" placeholder="Type & press Enter" data-target="conditions">
-              </div>
-            </div>
-
-            <!-- Emergency Contacts -->
-            <div class="form-group" style="margin-top:16px">
-              <label class="form-label">Emergency Contacts</label>
-              <div id="contactsList">
-                <div class="social-link-entry" data-contact="1">
-                  <input type="text" class="form-input" placeholder="Name" data-field="contactName" style="grid-column:1">
-                  <input type="tel" class="form-input" placeholder="Phone" data-field="contactPhone">
-                  <div></div>
-                </div>
-              </div>
-              <button class="add-btn" onclick="addContact()" style="margin-top:8px">+ Add Contact</button>
-            </div>
-
-            <div class="form-group" style="margin-top:16px">
-              <label class="form-label">Additional Notes</label>
-              <textarea class="form-textarea" id="notes" placeholder="Organ donor, insurance, preferred hospital..." rows="2"></textarea>
+            <div style="flex:1">
+              <label class="c-label">Display Name *</label>
+              <input type="text" class="c-input" id="displayName" placeholder="Your name" oninput="updatePreview()">
             </div>
           </div>
 
-          <!-- Smart Device -->
-          <div class="form-section-card">
-            <div class="section-header">
-              <div class="section-icon green">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
-              </div>
-              <div>
-                <div class="section-title">Smart Device</div>
-                <div class="section-subtitle">Link your Kairo wearable (optional)</div>
-              </div>
-            </div>
+          <label class="c-label">Username</label>
+          <input type="text" class="c-input" id="username" placeholder="@coolname" oninput="updatePreview()">
 
-            <div class="form-group">
-              <label class="form-label">Device ID</label>
-              <input type="text" class="form-input" id="deviceId" placeholder="e.g. KAIRO-001" style="font-family:'Courier New',monospace;letter-spacing:0.05em">
-              <div style="font-size:0.75rem;color:var(--text-tertiary);margin-top:6px">Find this on your Kairo wearable OLED screen or in the firmware config. Leave blank if no device.</div>
-            </div>
-          </div>
-
-          <!-- Theme -->
-          <div class="form-section-card">
-            <div class="section-header">
-              <div class="section-icon orange">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
-              </div>
-              <div>
-                <div class="section-title">Theme</div>
-                <div class="section-subtitle">Pick your vibe</div>
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label class="form-label">Accent Color</label>
-              <div class="color-picker-group" id="colorPicker">
-                <div class="color-swatch active" data-color="#a855f7" style="background:#a855f7" onclick="pickColor(this)"></div>
-                <div class="color-swatch" data-color="#3b82f6" style="background:#3b82f6" onclick="pickColor(this)"></div>
-                <div class="color-swatch" data-color="#22d3ee" style="background:#22d3ee" onclick="pickColor(this)"></div>
-                <div class="color-swatch" data-color="#10b981" style="background:#10b981" onclick="pickColor(this)"></div>
-                <div class="color-swatch" data-color="#ec4899" style="background:#ec4899" onclick="pickColor(this)"></div>
-                <div class="color-swatch" data-color="#f97316" style="background:#f97316" onclick="pickColor(this)"></div>
-                <div class="color-swatch" data-color="#ef4444" style="background:#ef4444" onclick="pickColor(this)"></div>
-                <div class="color-swatch" data-color="#eab308" style="background:#eab308" onclick="pickColor(this)"></div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Generate Button -->
-          <button class="btn btn-generate" onclick="generateProfile()">
-            Generate My Profile
-          </button>
-
+          <label class="c-label">Short Bio</label>
+          <textarea class="c-input c-textarea" id="bio" placeholder="Developer, gamer, creator..." oninput="updatePreview()" rows="2"></textarea>
         </div>
 
-        <!-- Right: Live Preview -->
-        <div class="preview-panel">
-          <div class="preview-label">Live Preview</div>
-          <div class="preview-phone">
-            <div class="preview-screen">
-              <div class="preview-notch"></div>
-              <div class="preview-content" id="previewContent">
-                <div class="preview-avatar" id="previewAvatar">?</div>
-                <div class="preview-name" id="previewName">Your Name</div>
-                <div class="preview-bio" id="previewBio">Your bio goes here...</div>
-                <div id="previewButtons"></div>
-                <div class="preview-socials" id="previewSocials"></div>
-              </div>
+        <!-- Social Links -->
+        <div class="c-card">
+          <div class="c-card-head">
+            <div class="c-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+            </div>
+            <div>
+              <div class="c-title">Social Links</div>
+              <div class="c-sub">Connect your platforms</div>
+            </div>
+          </div>
+          <div id="socialLinksContainer"></div>
+          <button class="c-add" onclick="addSocialLink()">+ Add Social Link</button>
+        </div>
+
+        <!-- Custom Buttons -->
+        <div class="c-card">
+          <div class="c-card-head">
+            <div class="c-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="8" width="18" height="8" rx="4"/></svg>
+            </div>
+            <div>
+              <div class="c-title">Custom Buttons</div>
+              <div class="c-sub">Links with custom labels</div>
+            </div>
+          </div>
+          <div id="customBtnsContainer"></div>
+          <button class="c-add" onclick="addCustomBtn()">+ Add Custom Button</button>
+        </div>
+
+        <!-- Emergency Info -->
+        <div class="c-card">
+          <div class="c-card-head">
+            <div class="c-icon c-icon-red">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+            </div>
+            <div>
+              <div class="c-title">Emergency Info</div>
+              <div class="c-sub">Medical details for first responders</div>
+            </div>
+          </div>
+
+          <div class="c-row">
+            <div>
+              <label class="c-label">Blood Type</label>
+              <select class="c-input c-select" id="bloodType">
+                <option value="">Select</option>
+                <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
+                <option>AB+</option><option>AB-</option><option>O+</option><option>O-</option>
+              </select>
+            </div>
+            <div>
+              <label class="c-label">Age</label>
+              <input type="number" class="c-input" id="age" placeholder="28" min="0" max="150">
+            </div>
+          </div>
+
+          <label class="c-label">Allergies</label>
+          <div class="c-tags" id="allergiesWrapper">
+            <input type="text" class="c-tags-input" id="allergiesInput" placeholder="Type & press Enter" data-target="allergies">
+          </div>
+
+          <label class="c-label">Medications</label>
+          <div class="c-tags" id="medicationsWrapper">
+            <input type="text" class="c-tags-input" id="medicationsInput" placeholder="Type & press Enter" data-target="medications">
+          </div>
+
+          <label class="c-label">Conditions</label>
+          <div class="c-tags" id="conditionsWrapper">
+            <input type="text" class="c-tags-input" id="conditionsInput" placeholder="Type & press Enter" data-target="conditions">
+          </div>
+
+          <label class="c-label" style="margin-top:14px">Emergency Contacts</label>
+          <div id="contactsList">
+            <div class="c-contact-row" data-contact="1">
+              <input type="text" class="c-input" placeholder="Name" data-field="contactName">
+              <input type="tel" class="c-input" placeholder="Phone" data-field="contactPhone">
+              <div style="width:32px"></div>
+            </div>
+          </div>
+          <button class="c-add" onclick="addContact()" style="margin-top:6px">+ Add Contact</button>
+
+          <label class="c-label" style="margin-top:14px">Notes</label>
+          <textarea class="c-input c-textarea" id="notes" placeholder="Organ donor, preferred hospital..." rows="2"></textarea>
+        </div>
+
+        <!-- Device -->
+        <div class="c-card">
+          <div class="c-card-head">
+            <div class="c-icon c-icon-green">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+            </div>
+            <div>
+              <div class="c-title">Smart Device</div>
+              <div class="c-sub">Link your Kairo wearable (optional)</div>
+            </div>
+          </div>
+          <label class="c-label">Device ID</label>
+          <input type="text" class="c-input c-mono" id="deviceId" placeholder="KAIRO-001">
+          <div class="c-hint">Found on your wearable's OLED screen. Leave blank if no device.</div>
+        </div>
+
+        <!-- Generate -->
+        <button class="c-generate" onclick="generateProfile()">Create Profile</button>
+
+      </div>
+
+      <!-- Preview Column -->
+      <div class="preview-col">
+        <div class="preview-sticky">
+          <div class="preview-label-text">LIVE PREVIEW</div>
+          <div class="preview-frame">
+            <div class="preview-notch"></div>
+            <div class="preview-body">
+              <div class="pv-avatar" id="previewAvatar">?</div>
+              <div class="pv-name" id="previewName">Your Name</div>
+              <div class="pv-bio" id="previewBio">Your bio here...</div>
+              <div id="previewButtons"></div>
+              <div class="pv-socials" id="previewSocials"></div>
             </div>
           </div>
         </div>
-
       </div>
+
     </div>
   </div>
 
   <!-- Result Modal -->
-  <div class="modal-overlay" id="resultModal">
-    <div class="modal">
-      <div class="modal-success-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+  <div class="modal-bg" id="resultModal">
+    <div class="modal-card">
+      <div class="modal-check">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
       </div>
-      <h2>Your Profile is Live!</h2>
-      <p>Share this link everywhere. Your page is ready.</p>
-      <div class="url-box">
-        <input type="text" id="resultUrl" readonly>
-        <button class="copy-btn" onclick="copyUrl()">Copy</button>
+      <h2>Profile Created</h2>
+      <p>Share this link. It could save a life.</p>
+      <div class="modal-url-row">
+        <input type="text" class="modal-url" id="resultUrl" readonly>
+        <button class="modal-copy" onclick="copyUrl()">Copy</button>
       </div>
-      <div class="qr-container" id="qrContainer"></div>
-      <div class="modal-actions">
-        <button class="btn btn-primary" onclick="viewProfile()">View My Profile</button>
-        <button class="btn btn-secondary" onclick="downloadQR()">Download QR Code</button>
-        <button class="btn btn-secondary" onclick="closeModal()">Close</button>
+      <div class="modal-qr" id="qrContainer"></div>
+      <div class="modal-btns">
+        <button class="btn-primary" onclick="viewProfile()" style="width:100%">View Profile</button>
+        <button class="btn-ghost" onclick="downloadQR()" style="width:100%">Download QR</button>
+        <button class="btn-ghost" onclick="closeModal()" style="width:100%">Close</button>
       </div>
     </div>
   </div>
 
-  <!-- Supabase SDK -->
+  <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-  <!-- QR Code Library -->
   <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
   <script src="js/firebase-config.js"></script>
   <script src="js/app.js"></script>
