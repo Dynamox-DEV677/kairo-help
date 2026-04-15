@@ -15,51 +15,63 @@ let isEmergencyMode = false;
 
   if (!currentProfileId) { showError(); return; }
 
+  // Start with localStorage fallback (instant — don't wait for Supabase)
+  let profileData = null;
   try {
-    let profileData = null;
     const local = localStorage.getItem(`profile_${currentProfileId}`);
     if (local) profileData = JSON.parse(local);
+  } catch (e) {}
 
-    const { data: row } = await supabase
-      .from('emergency_profiles')
-      .select('*')
-      .eq('id', currentProfileId)
-      .single();
+  // Try Supabase but don't block on it — use 8s timeout
+  const supaPromise = Promise.race([
+    supabase.from('emergency_profiles').select('*').eq('id', currentProfileId).single()
+      .then(res => res.data || null).catch(() => null),
+    new Promise(resolve => setTimeout(() => resolve(null), 8000))
+  ]);
 
-    if (!row && !profileData) { showError(); return; }
+  const row = await supaPromise;
 
-    const name = (row && row.name) || (profileData && profileData.name) || 'Unknown';
-    const deviceId = (row && row.device_id) || (profileData && profileData.deviceId) || null;
-    const linked = (row && row.device_linked) || !!(profileData && profileData.deviceId);
+  if (!row && !profileData) { showError(); return; }
 
-    // Dismiss loader
-    setTimeout(() => {
-      document.getElementById('loaderScreen').classList.add('fade-out');
-    }, 2000);
+  const name = (row && row.name) || (profileData && profileData.name) || 'Unknown';
+  const deviceId = (row && row.device_id) || (profileData && profileData.deviceId) || null;
+  const linked = (row && row.device_linked) || !!(profileData && profileData.deviceId);
 
-    setTimeout(() => {
-      if (!linked || !deviceId) {
-        document.getElementById('linkDeviceSection').classList.remove('hidden');
-        return;
-      }
+  // Dismiss loader asap
+  setTimeout(() => {
+    document.getElementById('loaderScreen').classList.add('fade-out');
+  }, 1000);
 
-      currentDeviceId = deviceId;
-      document.getElementById('dashboardSection').classList.remove('hidden');
-      document.getElementById('profileNameDisplay').textContent = name;
-      document.getElementById('deviceIdDisplay').textContent = deviceId;
-      document.getElementById('viewProfileLink').href = `view.html?id=${currentProfileId}`;
+  setTimeout(() => {
+    if (!linked || !deviceId) {
+      document.getElementById('linkDeviceSection').classList.remove('hidden');
+      return;
+    }
 
-      initMap();
-      loadDeviceStatus();
-      loadAlerts();
-      subscribeToAlerts();
-    }, 2400);
+    currentDeviceId = deviceId;
+    document.getElementById('dashboardSection').classList.remove('hidden');
+    document.getElementById('profileNameDisplay').textContent = name;
+    document.getElementById('deviceIdDisplay').textContent = deviceId;
+    document.getElementById('viewProfileLink').href = `view.html?id=${currentProfileId}`;
 
-  } catch (err) {
-    console.error(err);
-    showError();
-  }
+    // Wrap each init so partial failures don't cascade
+    safeCall(initMap, 'initMap');
+    safeCall(loadDeviceStatus, 'loadDeviceStatus');
+    safeCall(loadAlerts, 'loadAlerts');
+    safeCall(subscribeToAlerts, 'subscribeToAlerts');
+  }, 1400);
 })();
+
+function safeCall(fn, name) {
+  try {
+    const result = fn();
+    if (result && typeof result.catch === 'function') {
+      result.catch(err => console.warn('[' + name + ']', err));
+    }
+  } catch (err) {
+    console.warn('[' + name + ']', err);
+  }
+}
 
 // ===== Map =====
 function initMap() {
