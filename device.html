@@ -4,26 +4,27 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Live Tracking - Kairo's Help</title>
-  <meta name="theme-color" content="#0a0a0f">
+  <meta name="theme-color" content="#080808">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="css/landing.css">
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/dashboard.css">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28'><rect width='28' height='28' rx='6' fill='%23a855f7'/><path d='M14 7v14M7 14h14' stroke='white' stroke-width='3' stroke-linecap='round'/></svg>">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28'><rect width='28' height='28' rx='6' fill='%23fff'/><path d='M14 7v14M7 14h14' stroke='%23111' stroke-width='3' stroke-linecap='round'/></svg>">
 </head>
 <body class="dash-body">
 
   <!-- Emergency Overlay (shown during active SOS) -->
   <div class="emergency-overlay" id="emergencyOverlay"></div>
 
-  <!-- Animated Background -->
-  <div class="bg-animation">
-    <div class="bg-blob"></div>
-    <div class="bg-blob"></div>
-    <div class="bg-blob"></div>
+  <!-- Space Background (matches landing) -->
+  <div class="space-bg">
+    <div class="stars stars-sm"></div>
+    <div class="stars stars-md"></div>
+    <div class="stars stars-lg"></div>
+    <div class="nebula"></div>
   </div>
-  <div class="bg-grid"></div>
 
   <!-- ===== LOADING SCREEN ===== -->
   <div class="loader-screen" id="loaderScreen">
@@ -236,6 +237,10 @@
           <input type="number" class="sim-input" id="simLng" value="77.5946" step="0.001" placeholder="Longitude">
         </div>
       </div>
+      <button class="sim-my-location" onclick="useMyLocation(this)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M1 12h4M19 12h4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+        Use My Real Location
+      </button>
       <div class="sim-presets">
         <button class="sim-preset" onclick="setSimLocation(12.9716,77.5946)">Bangalore</button>
         <button class="sim-preset" onclick="setSimLocation(19.0760,72.8777)">Mumbai</button>

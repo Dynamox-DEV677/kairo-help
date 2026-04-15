@@ -90,7 +90,7 @@ function updateMapLocation(lat, lng) {
       className: 'custom-marker',
       html: `
         <div style="position:relative;width:20px;height:20px">
-          <div style="width:20px;height:20px;border-radius:50%;background:#a855f7;box-shadow:0 0 12px #a855f7,0 0 30px rgba(168,85,247,0.4);position:absolute;inset:0"></div>
+          <div style="width:20px;height:20px;border-radius:50%;background:#ffffff;box-shadow:0 0 12px #ffffff,0 0 30px rgba(255,255,255,0.4);position:absolute;inset:0"></div>
           <div class="radar-ping"></div>
           <div class="radar-ping" style="animation-delay:1s"></div>
         </div>
