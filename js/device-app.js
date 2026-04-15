@@ -61,14 +61,51 @@ function startDeviceMode() {
   log('Device activated', 'heartbeat');
 }
 
-function resetDevice() {
-  if (!confirm('Reset device? This will clear your profile ID.')) return;
+async function resetDevice() {
+  const ok = await showConfirm({
+    title: 'Reset Device?',
+    message: 'This will clear your profile ID and device ID.',
+    confirmText: 'Reset'
+  });
+  if (!ok) return;
+
   localStorage.removeItem(STORAGE_KEY);
   if (heartbeatTimer) clearInterval(heartbeatTimer);
   if (countdownTimer) clearInterval(countdownTimer);
   if (watchId !== null) navigator.geolocation.clearWatch(watchId);
   location.reload();
 }
+
+// ===== Themed Confirm Modal =====
+let _confirmResolver = null;
+
+function showConfirm({ title, message, confirmText = 'OK' }) {
+  return new Promise((resolve) => {
+    document.getElementById('confirmTitle').textContent = title;
+    document.getElementById('confirmMsg').textContent = message;
+    document.querySelector('.confirm-ok').textContent = confirmText;
+    document.getElementById('confirmBg').classList.add('show');
+    _confirmResolver = resolve;
+  });
+}
+
+function closeConfirm(result) {
+  document.getElementById('confirmBg').classList.remove('show');
+  if (_confirmResolver) {
+    _confirmResolver(result);
+    _confirmResolver = null;
+  }
+}
+
+// Close on backdrop click
+document.addEventListener('DOMContentLoaded', () => {
+  const bg = document.getElementById('confirmBg');
+  if (bg) {
+    bg.addEventListener('click', (e) => {
+      if (e.target === bg) closeConfirm(false);
+    });
+  }
+});
 
 // ===== GPS =====
 function startGPS() {

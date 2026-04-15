@@ -133,6 +133,21 @@
     </div>
   </div>
 
+  <!-- Confirm Modal -->
+  <div class="confirm-bg" id="confirmBg">
+    <div class="confirm-card">
+      <div class="confirm-icon" id="confirmIcon">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/></svg>
+      </div>
+      <div class="confirm-title" id="confirmTitle">Reset Device?</div>
+      <div class="confirm-msg" id="confirmMsg">This will clear your profile ID and device ID.</div>
+      <div class="confirm-actions">
+        <button class="confirm-cancel" onclick="closeConfirm(false)">Cancel</button>
+        <button class="confirm-ok" onclick="closeConfirm(true)">Reset</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="js/firebase-config.js"></script>
