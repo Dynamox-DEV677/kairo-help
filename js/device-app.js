@@ -14,7 +14,15 @@ let nextHeartbeatMs = HEARTBEAT_INTERVAL;
 let watchId = null;
 
 // ===== Init =====
-(function init() {
+function initApp() {
+  const setup = document.getElementById('setupScreen');
+  const device = document.getElementById('deviceScreen');
+  if (!setup || !device) {
+    // DOM not ready yet — retry after DOMContentLoaded
+    document.addEventListener('DOMContentLoaded', initApp, { once: true });
+    return;
+  }
+
   const saved = localStorage.getItem(STORAGE_KEY);
   if (saved) {
     try {
@@ -22,14 +30,20 @@ let watchId = null;
       if (parsed.profileId && parsed.deviceId) {
         profileId = parsed.profileId;
         deviceId = parsed.deviceId;
+        setup.classList.add('hidden');
+        device.classList.remove('hidden');
         startDeviceMode();
         return;
       }
     } catch (e) {}
   }
-  // Show setup screen
-  document.getElementById('setupScreen').classList.remove('hidden');
-})();
+
+  // No saved data → show setup
+  setup.classList.remove('hidden');
+  device.classList.add('hidden');
+}
+
+initApp();
 
 // ===== Setup Flow =====
 function startDevice() {
@@ -48,8 +62,12 @@ function startDevice() {
 }
 
 function startDeviceMode() {
+  // Ensure correct screens are shown
   document.getElementById('setupScreen').classList.add('hidden');
   document.getElementById('deviceScreen').classList.remove('hidden');
+
+  // Scroll to top (sometimes refresh leaves mid-page scroll)
+  window.scrollTo(0, 0);
 
   document.getElementById('devDeviceId').textContent = deviceId;
   document.getElementById('dashLink').href = `device.html?id=${profileId}`;
