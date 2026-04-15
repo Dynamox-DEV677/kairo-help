@@ -112,7 +112,9 @@ function startLivePolling() {
   _liveTimer = setInterval(() => {
     safeCall(loadDeviceStatus, 'pollStatus');
     safeCall(loadAlerts, 'pollAlerts');
-    safeCall(loadMessages, 'pollMessages');
+    if (typeof _messagesAvailable === 'undefined' || _messagesAvailable) {
+      safeCall(loadMessages, 'pollMessages');
+    }
   }, LIVE_INTERVAL_MS);
 }
 
@@ -598,12 +600,14 @@ async function sendTestAlert(alertType) {
 
 // ===== MESSAGES / CHECK-IN =====
 let _msgInited = false;
+let _messagesAvailable = true; // flips false after first 404, stops polling
 
 async function initMessages() {
   if (_msgInited || !currentProfileId) return;
   _msgInited = true;
 
   await loadMessages();
+  if (!_messagesAvailable) return; // table missing — don't subscribe
 
   // Real-time subscription for incoming answers
   supabase
@@ -624,13 +628,26 @@ async function initMessages() {
 }
 
 async function loadMessages() {
+  if (!_messagesAvailable) return; // table missing — skip silently
   try {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('messages')
       .select('*')
       .eq('profile_id', currentProfileId)
       .order('sent_at', { ascending: true })
       .limit(30);
+
+    if (error) {
+      // Table doesn't exist or other PostgREST error — disable messages
+      if (error.code === 'PGRST205' || error.message.includes('not find the table')) {
+        _messagesAvailable = false;
+        const convo = document.getElementById('msgConvo');
+        if (convo) {
+          convo.innerHTML = '<div class="msg-empty">Messages table not created yet. Run sql/messages.sql in Supabase.</div>';
+        }
+      }
+      return;
+    }
 
     const convo = document.getElementById('msgConvo');
     if (!convo) return;
@@ -683,15 +700,25 @@ async function sendQuickMsg(text) {
 }
 
 async function doSendMsg(text) {
+  if (!_messagesAvailable) {
+    alert('Messages table not set up yet. Run the SQL in Supabase first.');
+    return;
+  }
   try {
-    await supabase.from('messages').insert({
+    const { error } = await supabase.from('messages').insert({
       profile_id: currentProfileId,
       device_id: currentDeviceId,
       question: text
     });
+    if (error) {
+      if (error.code === 'PGRST205' || error.message.includes('not find the table')) {
+        _messagesAvailable = false;
+      }
+      return;
+    }
     await loadMessages();
   } catch (e) {
-    console.error('Send msg:', e);
+    console.warn('Send msg failed:', e.message);
   }
 }
 
