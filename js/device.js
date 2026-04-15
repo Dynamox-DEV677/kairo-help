@@ -73,6 +73,79 @@ function safeCall(fn, name) {
   }
 }
 
+// ===== LIVE AUTO-REFRESH TOGGLE =====
+const LIVE_KEY = 'kairo_live_refresh';
+const LIVE_INTERVAL_MS = 3000; // poll every 3s when live
+let _liveTimer = null;
+
+function isLiveOn() {
+  // Default ON for new users
+  const saved = localStorage.getItem(LIVE_KEY);
+  return saved === null ? true : saved === '1';
+}
+
+function setLiveOn(on) {
+  localStorage.setItem(LIVE_KEY, on ? '1' : '0');
+  updateLiveToggleUI(on);
+  if (on) startLivePolling(); else stopLivePolling();
+}
+
+function toggleLive() {
+  setLiveOn(!isLiveOn());
+}
+
+function updateLiveToggleUI(on) {
+  const btn = document.getElementById('liveToggle');
+  const label = document.getElementById('liveToggleLabel');
+  if (!btn || !label) return;
+  if (on) {
+    btn.classList.add('on');
+    label.textContent = 'LIVE';
+  } else {
+    btn.classList.remove('on');
+    label.textContent = 'OFF';
+  }
+}
+
+function startLivePolling() {
+  stopLivePolling();
+  _liveTimer = setInterval(() => {
+    safeCall(loadDeviceStatus, 'pollStatus');
+    safeCall(loadAlerts, 'pollAlerts');
+    safeCall(loadMessages, 'pollMessages');
+  }, LIVE_INTERVAL_MS);
+}
+
+function stopLivePolling() {
+  if (_liveTimer) {
+    clearInterval(_liveTimer);
+    _liveTimer = null;
+  }
+}
+
+// Initialize toggle once dashboard mounts
+document.addEventListener('DOMContentLoaded', () => {
+  // Wait until dashboard is visible
+  const tryInit = () => {
+    if (document.getElementById('liveToggle')) {
+      updateLiveToggleUI(isLiveOn());
+      if (isLiveOn()) startLivePolling();
+    } else {
+      setTimeout(tryInit, 500);
+    }
+  };
+  tryInit();
+});
+
+// Pause polling when tab hidden to save bandwidth
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    stopLivePolling();
+  } else if (isLiveOn()) {
+    startLivePolling();
+  }
+});
+
 // ===== Map =====
 function initMap() {
   deviceMap = L.map('deviceMap', {

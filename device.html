@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Live Tracking - Kairo's Help</title>
   <meta name="theme-color" content="#080808">
-  <meta http-equiv="refresh" content="10">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
@@ -72,7 +71,11 @@
         Kairo's Help
       </a>
       <div class="dash-nav-right">
-        <div class="live-badge" id="liveBadge">
+        <button class="live-toggle" id="liveToggle" onclick="toggleLive()">
+          <span class="live-toggle-track"><span class="live-toggle-knob"></span></span>
+          <span class="live-toggle-label" id="liveToggleLabel">LIVE</span>
+        </button>
+        <div class="live-badge hidden" id="liveBadge">
           <span class="live-dot"></span>
           LIVE
         </div>
