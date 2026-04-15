@@ -133,6 +133,24 @@
     </div>
   </div>
 
+  <!-- ===== INCOMING MESSAGE MODAL ===== -->
+  <div class="msg-incoming" id="msgIncoming">
+    <div class="msg-in-card">
+      <div class="msg-in-label">MESSAGE FROM PARENT</div>
+      <div class="msg-in-question" id="msgInQuestion">...</div>
+      <div class="msg-in-actions">
+        <button class="msg-btn-no" onclick="answerMsg('no')">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          NO
+        </button>
+        <button class="msg-btn-yes" onclick="answerMsg('yes')">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          YES
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Confirm Modal -->
   <div class="confirm-bg" id="confirmBg">
     <div class="confirm-card">

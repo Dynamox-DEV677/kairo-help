@@ -522,3 +522,135 @@ async function sendTestAlert(alertType) {
     status.textContent = 'Failed: ' + (e.message || 'Unknown error');
   }
 }
+
+// ===== MESSAGES / CHECK-IN =====
+let _msgInited = false;
+
+async function initMessages() {
+  if (_msgInited || !currentProfileId) return;
+  _msgInited = true;
+
+  await loadMessages();
+
+  // Real-time subscription for incoming answers
+  supabase
+    .channel('msg-' + currentProfileId)
+    .on('postgres_changes', {
+      event: 'UPDATE',
+      schema: 'public',
+      table: 'messages',
+      filter: `profile_id=eq.${currentProfileId}`
+    }, () => loadMessages())
+    .on('postgres_changes', {
+      event: 'INSERT',
+      schema: 'public',
+      table: 'messages',
+      filter: `profile_id=eq.${currentProfileId}`
+    }, () => loadMessages())
+    .subscribe();
+}
+
+async function loadMessages() {
+  try {
+    const { data } = await supabase
+      .from('messages')
+      .select('*')
+      .eq('profile_id', currentProfileId)
+      .order('sent_at', { ascending: true })
+      .limit(30);
+
+    const convo = document.getElementById('msgConvo');
+    if (!convo) return;
+
+    if (!data || data.length === 0) {
+      convo.innerHTML = '<div class="msg-empty">No messages yet. Send a check-in above.</div>';
+      return;
+    }
+
+    convo.innerHTML = '';
+    data.forEach(m => {
+      // Parent's question bubble
+      const qBubble = document.createElement('div');
+      qBubble.className = 'msg-bubble parent';
+      qBubble.innerHTML = escapeHtml(m.question) + `<div class="msg-time">${fmtTime(m.sent_at)}</div>`;
+      convo.appendChild(qBubble);
+
+      // Child's answer bubble (or pending)
+      if (m.answer) {
+        const aBubble = document.createElement('div');
+        aBubble.className = 'msg-bubble child-' + m.answer;
+        aBubble.innerHTML = m.answer.toUpperCase() +
+          `<div class="msg-time">${fmtTime(m.answered_at)}</div>`;
+        convo.appendChild(aBubble);
+      } else {
+        const p = document.createElement('div');
+        p.className = 'msg-bubble pending';
+        p.textContent = 'Waiting for answer...';
+        convo.appendChild(p);
+      }
+    });
+
+    convo.scrollTop = convo.scrollHeight;
+  } catch (e) {
+    console.warn('Load messages:', e);
+  }
+}
+
+async function sendMsg() {
+  const input = document.getElementById('msgInput');
+  const text = input.value.trim();
+  if (!text || !currentProfileId) return;
+  await doSendMsg(text);
+  input.value = '';
+}
+
+async function sendQuickMsg(text) {
+  if (!currentProfileId) return;
+  await doSendMsg(text);
+}
+
+async function doSendMsg(text) {
+  try {
+    await supabase.from('messages').insert({
+      profile_id: currentProfileId,
+      device_id: currentDeviceId,
+      question: text
+    });
+    await loadMessages();
+  } catch (e) {
+    console.error('Send msg:', e);
+  }
+}
+
+function fmtTime(ts) {
+  if (!ts) return '';
+  const d = new Date(ts);
+  const now = new Date();
+  const diff = now - d;
+  if (diff < 60000) return 'just now';
+  if (diff < 3600000) return Math.floor(diff / 60000) + 'm ago';
+  return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
+function escapeHtml(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+// Hook Enter key on input
+document.addEventListener('DOMContentLoaded', () => {
+  const input = document.getElementById('msgInput');
+  if (input) {
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') sendMsg();
+    });
+  }
+});
+
+// Init messages once device dashboard shows up — safeCall it
+const _origSafeCall = safeCall;
+safeCall = function(fn, name) {
+  _origSafeCall(fn, name);
+  if (name === 'loadAlerts') _origSafeCall(initMessages, 'initMessages');
+};

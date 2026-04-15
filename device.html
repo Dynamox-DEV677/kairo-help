@@ -180,6 +180,29 @@
         </div>
       </div>
 
+      <!-- ===== MESSAGES / CHECK-IN ===== -->
+      <div class="timeline-section">
+        <div class="section-label">SEND CHECK-IN</div>
+
+        <div class="msg-quick-row">
+          <button class="msg-quick" onclick="sendQuickMsg('Are you safe?')">Are you safe?</button>
+          <button class="msg-quick" onclick="sendQuickMsg('Did you reach school?')">Reached school?</button>
+          <button class="msg-quick" onclick="sendQuickMsg('Need pickup?')">Need pickup?</button>
+          <button class="msg-quick" onclick="sendQuickMsg('Can you call me?')">Call me?</button>
+        </div>
+
+        <div class="msg-input-row">
+          <input type="text" class="msg-input" id="msgInput" placeholder="Type yes/no question..." maxlength="60">
+          <button class="msg-send" onclick="sendMsg()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </button>
+        </div>
+
+        <div class="msg-convo" id="msgConvo">
+          <div class="msg-empty">No messages yet. Send a check-in above.</div>
+        </div>
+      </div>
+
       <!-- ===== ALERT TIMELINE ===== -->
       <div class="timeline-section">
         <div class="section-label">ALERT TIMELINE</div>

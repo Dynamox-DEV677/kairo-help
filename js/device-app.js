@@ -77,6 +77,76 @@ function startDeviceMode() {
   startHeartbeats();
   setStatus('online');
   log('Device activated', 'heartbeat');
+  subscribeToMessages();
+  checkPendingMessage();
+}
+
+// ===== MESSAGE HANDLING =====
+let _currentMsgId = null;
+
+function subscribeToMessages() {
+  supabase
+    .channel('dev-msg-' + profileId)
+    .on('postgres_changes', {
+      event: 'INSERT',
+      schema: 'public',
+      table: 'messages',
+      filter: `profile_id=eq.${profileId}`
+    }, (payload) => {
+      const m = payload.new;
+      if (!m.answer) showIncomingMessage(m);
+    })
+    .subscribe();
+}
+
+async function checkPendingMessage() {
+  try {
+    const { data } = await supabase
+      .from('messages')
+      .select('*')
+      .eq('profile_id', profileId)
+      .is('answer', null)
+      .order('sent_at', { ascending: false })
+      .limit(1);
+
+    if (data && data.length > 0) {
+      showIncomingMessage(data[0]);
+    }
+  } catch (e) {
+    console.warn('Pending msg check:', e);
+  }
+}
+
+function showIncomingMessage(msg) {
+  _currentMsgId = msg.id;
+  document.getElementById('msgInQuestion').textContent = msg.question;
+  document.getElementById('msgIncoming').classList.add('show');
+
+  // Vibrate phone
+  if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+
+  log('Message: ' + msg.question, 'heartbeat');
+}
+
+async function answerMsg(answer) {
+  if (!_currentMsgId) return;
+
+  // Haptic feedback
+  if (navigator.vibrate) navigator.vibrate(50);
+
+  try {
+    await supabase
+      .from('messages')
+      .update({ answer, answered_at: new Date().toISOString() })
+      .eq('id', _currentMsgId);
+
+    log('Replied: ' + answer.toUpperCase(), answer === 'yes' ? 'heartbeat' : 'fall');
+  } catch (e) {
+    log('Reply failed: ' + e.message, 'error');
+  }
+
+  document.getElementById('msgIncoming').classList.remove('show');
+  _currentMsgId = null;
 }
 
 async function resetDevice() {
